@@ -1,0 +1,20 @@
+Version 0.4
+- Initital Release
+
+Version 0.5
+- (Added) isofix
+- (Added) Fixing extracted ISOs with right LBA
+
+Version 0.6
+- (Added) Reads out the correct "1ST_READ.BIN"-Name using strings
+
+Version 0.6.5
+- (Fixed) ISO-2-SDISO convertation
+
+Version 0.6.6
+- (Improved) 1ST_READ.BIN detection now using dd, so strings needed anymore!
+
+Version 0.7
+- (Added) Support for more than 1 extracted ISO
+- (Improved) Algorithms and small stuff
+- (Improved) Saves image as "<NAME>-sd.iso" if no name is given

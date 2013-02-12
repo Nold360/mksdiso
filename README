@@ -1,0 +1,19 @@
+mksdiso 
+Verison: 0.7
+
+This toolkit creates a SDISO that is (sometimes) useable with the DreamShell ISO-Loader on the Dreamcast.
+You can use Folders, CDIs and ISOs as Sources. 
+It will create an useable (SD)ISO from it.
+
+
+Installation:
+	1. cp ./usr/local/bin/* /usr/local/bin/
+	2. cp -r ./opt/mksdiso /opt/
+	
+	3. run mksdiso
+
+Sources for all the binarys are also included!
+Thanks to the creaters of these tools :)
+
+Created by Nold 2012
+Share as you want - But keep my Name in it! ;-) Kinda Fair-Trade ;-)

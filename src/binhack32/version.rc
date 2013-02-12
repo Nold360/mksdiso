@@ -1,0 +1,33 @@
+#include <winver.h>
+#include <windows.h>
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,3
+PRODUCTVERSION 1,0,0,3
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+
+BEGIN
+
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040C04E4"
+		BEGIN
+			VALUE "Comments", "BINHACK 32bit clone\0"
+			VALUE "CompanyName", "FamilyGuy & SiZiOUS 2010\0"
+			VALUE "FileDescription", "Dreamcast IP.BIN/BOOT.BIN Selfboot Hacker\0"
+			VALUE "FileVersion", "1.0.0.3"
+			VALUE "InternalName", "binhack32.exe\0"
+			VALUE "LegalCopyright", "WTF Public License v2\0"
+			VALUE "OriginalFilename", "binhack32.exe\0"
+			VALUE "ProductName", "BINHACK32\0"
+			VALUE "ProductVersion", "1.0.0.3"
+		END
+	END
+
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x1009, 0x04E4
+	END
+
+END
