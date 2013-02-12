@@ -1,3 +1,0 @@
-./ext_recvd1.cdi/1ST_READ.BIN
-/opt/mksdiso/katana/IP.BIN
-0
