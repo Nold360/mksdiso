@@ -12,7 +12,7 @@ Version 0.6.5
 - (Fixed) ISO-2-SDISO convertation
 
 Version 0.6.6
-- (Improved) 1ST_READ.BIN detection now using dd, so strings needed anymore!
+- (Improved) 1ST_READ.BIN detection now using dd, no strings needed anymore!
 
 Version 0.7
 - (Added) Support for more than 1 extracted ISO
