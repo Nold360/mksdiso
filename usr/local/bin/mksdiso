@@ -121,6 +121,12 @@ function extract_image() { #ARGs File, Destionation Path
 		#Just a single ISO
 		echo "Extracting META-Informations to obtain 1ST_READ.BIN name.."
 		SR_READ=$(extract_1st_read_name $IN_FILE)
+		if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
+			echo "Look's fine... Everything where it belongs!"
+		elif [ "$SR_READ" != "" ] ; then
+                     	echo "Found that bit** as $SR_READ!"
+		fi
+
 		echo "Extracting Data from Image... This could take a while..."	
 		mount -o loop -t iso9660 "$IN_FILE" "$MOUNTPOINT"
 		cp -r $MOUNTPOINT/* $OUT_PATH
