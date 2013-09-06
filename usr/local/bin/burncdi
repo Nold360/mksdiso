@@ -1,0 +1,109 @@
+#!/bin/bash
+##############################################################################################################
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+##############################################################################################################
+# Copyright (c) 2012, Nold, http://nold.freeunix.net
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# - Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in
+#   the documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+###############################################################################################################
+which cdirip &> /dev/null || (echo "Please install cdirip" && exit 1)
+which cdrecord &> /dev/null || (echo "Please install cdrecord" && exit 1)
+
+if [ "$1" == "-f" ] ; then
+        OVERBURN="-overburn"
+        shift
+else
+        OVERBURN=""
+fi
+
+CDIIMG="$1"
+DEVICE="/dev/cdrw"
+
+function show_help {
+        if [ $# -gt 0 ] ; then
+                echo $1
+        fi
+        echo "BurnCDI by milksheik, improved by Nold 2013"
+        echo "Usage:"
+        echo "       $0 [-f] <CDI-File>"
+        echo
+        echo "       -f | Force burning of Image & enable overburning"
+        exit 1
+}
+
+if [ $# -lt 1 ] ; then
+        show_help
+fi
+
+if [ ! -f "$CDIIMG" ] ; then
+        show_help "ERROR: Couldn't open CDI-File: $CDIIMG"
+fi
+
+if [ ! -e "$DEVICE" ] ; then
+        show_help "ERROR: Couldn't open CD-R: $DEVICE"
+fi
+
+EXT_DIR="ext_$(basename $CDIIMG)"
+mkdir ${EXT_DIR}
+
+( [ -d ${EXT_DIR} ] && cdirip "${CDIIMG}" "${EXT_DIR}" -cdrecord ) || show_help "ERROR: ${EXT_DIR} dosn't exist!"
+
+COUNTER="0"
+RET=1
+MORE=true
+
+if [ $(du -s ${EXT_DIR} 2> /dev/null | awk '{print $1}') -ge 700000 -a "$OVERBURN" == "" ] ; then
+        echo "CRITICAL_ERROR: Extracted files are too big, to fit on a CD-R..."
+        echo "If you want to force the burn process, try -f"
+        echo "Abording..."
+        rm -rf ${EXT_DIR}
+        exit 2
+elif [ "$OVERBURN" != "" ] ; then
+        echo "Skipping size-check.."
+fi
+
+while $MORE ; do
+        COUNTER=$(($COUNTER + 1))
+        NUMBER=$(printf %02u $COUNTER)
+        ISOFILE=${EXT_DIR}/tdata${NUMBER}.iso
+        WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
+
+        if [ -f $WAVFILE ]; then
+                cdrecord dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE && rm ${WAVFILE}
+        elif [ -f $ISOFILE ]; then
+                cdrecord dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE && rm ${ISOFILE}
+                RET=$?
+        else
+                MORE=false
+        fi
+done
+echo "Burning done! Cleaning up..."
+rm -rf ${EXT_DIR}
+
+eject $DEVICE
+if [ $RET -eq 0 ] ; then
+        echo "Everything looks fine... Good Game!"
+        exit 0
+else
+        echo "Ahrrr.. There seems to be a problem, sorry :("
+        exit 1
+fi
+
