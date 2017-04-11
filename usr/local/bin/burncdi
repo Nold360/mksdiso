@@ -4,7 +4,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ##############################################################################################################
-# Copyright (c) 2012, Nold, http://nold.freeunix.net
+# Copyright (c) 2012, Nold, https://nold.in
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -24,8 +24,22 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################################################
-which cdirip &> /dev/null || (echo "Please install cdirip" && exit 1)
-which cdrecord &> /dev/null || (echo "Please install cdrecord" && exit 1)
+trap cleanup EXIT SIGINT SIGKILL
+
+# Test if cdirip is available in $PATH
+if ! type cdirip &> /dev/null ; then echo "Please install cdirip" ;  exit 1 ; fi
+
+# Test if cdrecord or wodim are available in $PATH
+if ! type wodim &> /dev/null ; then
+    if ! type cdrecord &> /dev/null ; then
+        echo "Please install wodim / cdrecord"
+        exit 1
+    else
+        BURNBIN=cdrecord
+    fi
+else 
+    BURNBIN=wodim
+fi
 
 if [ "$1" == "-f" ] ; then
         OVERBURN="-overburn"
@@ -38,15 +52,23 @@ CDIIMG="$1"
 DEVICE="/dev/cdrw"
 
 function show_help {
-        if [ $# -gt 0 ] ; then
-                echo $1
-        fi
-        echo "BurnCDI by milksheik, improved by Nold 2013"
-        echo "Usage:"
-        echo "       $0 [-f] <CDI-File>"
-        echo
-        echo "       -f | Force burning of Image & enable overburning"
-        exit 1
+    if [ $# -gt 0 ] ; then
+        echo "---------------------------------------------------"
+        echo $@
+        echo "---------------------------------------------------"
+    fi
+    echo "BurnCDI by milksheik, improved by Nold"
+    echo "Usage:"
+    echo "       $0 [-f] <CDI-File>"
+    echo
+    echo "       -f | Force burning of Image & enable overburning"
+    exit 1
+}
+
+function cleanup {
+    if [ ! -z "$EXT_DIR" ] && [ -d "$EXT_DIR" ] ; then
+        rm -rf --one-file-system "${EXT_DIR}"
+    fi
 }
 
 if [ $# -lt 1 ] ; then
@@ -62,48 +84,74 @@ if [ ! -e "$DEVICE" ] ; then
 fi
 
 EXT_DIR="ext_$(basename $CDIIMG)"
+if [ -e $EXT_DIR ] ; then
+    echo "ERROR: Couldn't unpack to '$EXT_DIR' - File exists"
+    exit 2
+fi
+
 mkdir ${EXT_DIR}
-
-( [ -d ${EXT_DIR} ] && cdirip "${CDIIMG}" "${EXT_DIR}" -cdrecord ) || show_help "ERROR: ${EXT_DIR} dosn't exist!"
-
-COUNTER="0"
-RET=1
-MORE=true
+if [ -d ${EXT_DIR} ] ; then 
+    cdirip "${CDIIMG}" "${EXT_DIR}" -cdrecord || \
+    show_help "ERROR: ${EXT_DIR} dosn't exist!"
+fi
 
 if [ $(du -s ${EXT_DIR} 2> /dev/null | awk '{print $1}') -ge 700000 -a "$OVERBURN" == "" ] ; then
-        echo "CRITICAL_ERROR: Extracted files are too big, to fit on a CD-R..."
-        echo "If you want to force the burn process, try -f"
-        echo "Abording..."
-        rm -rf ${EXT_DIR}
-        exit 2
+    echo "---------------------------------------------------"
+    echo "CRITICAL_ERROR: Extracted files are too big, to fit on a CD-R..."
+    echo "If you want to force the burn process, try -f"
+    echo "Aborting..."
+    echo "---------------------------------------------------"
+    cleanup
+    exit 3
 elif [ "$OVERBURN" != "" ] ; then
-        echo "Skipping size-check.."
+    echo "NOTICE: Skipping Filesize Check..."
 fi
 
+echo
+echo "---------------------------------------------------"
+echo "Starting burning process using $BURNBIN"
+
+COUNTER=0
+RET=99
+MORE=true
 while $MORE ; do
-        COUNTER=$(($COUNTER + 1))
-        NUMBER=$(printf %02u $COUNTER)
-        ISOFILE=${EXT_DIR}/tdata${NUMBER}.iso
-        WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
+    COUNTER=$(($COUNTER + 1))
+    NUMBER=$(printf %02u $COUNTER)
+    ISOFILE=${EXT_DIR}/tdata${NUMBER}.iso
+    WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
 
-        if [ -f $WAVFILE ]; then
-                cdrecord dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE && rm ${WAVFILE}
-        elif [ -f $ISOFILE ]; then
-                cdrecord dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE && rm ${ISOFILE}
-                RET=$?
-        else
-                MORE=false
-        fi
+    echo "---------------------------------------------------"
+    if [ -f $WAVFILE ]; then
+        echo "Burning Part $NUMBER: '$WAVFILE'"
+        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE
+    elif [ -f $ISOFILE ]; then
+        echo "Burning Part  $NUMBER: '$ISOFILE'"
+        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE
+        RET=$?
+    else
+        MORE=false
+    fi
 done
-echo "Burning done! Cleaning up..."
-rm -rf ${EXT_DIR}
 
-eject $DEVICE
+echo
+echo "---------------------------------------------------"
+echo "Burning process... Done"
+echo -n "Cleaning up... "
+cleanup
+echo "Done"
+
+echo -n "Ejecting Disk... "
+eject $DEVICE &>/dev/null
+echo "Done"
+
 if [ $RET -eq 0 ] ; then
-        echo "Everything looks fine... Good Game!"
-        exit 0
+    echo "---------------------------------------------------"
+    echo "Everything looks fine... Good Game!"
+    echo "---------------------------------------------------"
 else
-        echo "Ahrrr.. There seems to be a problem, sorry :("
-        exit 1
+    echo "---------------------------------------------------"
+    echo "An error accured! Check $BURNBIN output"
+    echo "---------------------------------------------------"
+    echo
 fi
-
+exit $RET
