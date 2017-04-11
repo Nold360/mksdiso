@@ -18,21 +18,21 @@ Requirements:
  - wodim or cdrecord for burning CDI-Files 
 
  On Ubuntu/Debian run:
-  sudo apt-get install p7zip wodim genisoimage
+    $ sudo apt-get install p7zip wodim genisoimage
 
 
 Installation:
     0. Clone git & change directory:
         $ git clone https://github.com/Nold360/mksdiso
         $ cd mksdiso
-
-	1. Copy Scripts & Binaries into $PATH:
+    
+    1. Copy Scripts & Binaries into $PATH:
         $ sudo cp ./bin/* /usr/local/bin/
 
-	2. Copy mksdiso folder, including required files into your home: 
+    2. Copy mksdiso folder, including required files into your home: 
         $ cp -r mksdiso ~/.mksdiso
 	
-	4. Run mksdiso
+    4. Run mksdiso
     5. Have fun! :)
 
 
