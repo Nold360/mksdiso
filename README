@@ -8,6 +8,7 @@ This Git-Repository includes:
  - binhack32 (IP.BIN/BOOT.BIN SB Hacker - 32bit BINHACK Clone by FamilyGuy 2010)
  - isofix (ISO LBA fixer 1.3 - (C) 2001 by DeXT)
  - scramble ("scrambler" for 1ST_READ.BIN)
+ - cdirip (Ver. 0.6.2 - (C) 2001 by DeXT - Hacked for Linux by me 2012)
  - burncdi (Script for burning CDI-Files using Linux - By milksheik & me)
  - mksdiso (Script to convert a Dir/CDI/ISO to Dreamshell SD-ISO format)
 
