@@ -1,0 +1,314 @@
+#!/bin/bash
+##############################################################################################################
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+##############################################################################################################
+# Copyright (c) 2012, Nold, http://nold.freeunix.net
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, 
+# are permitted provided that the following conditions are met:
+#
+# - Redistributions of source code must retain the above copyright notice, 
+#   this list of conditions and the following disclaimer.
+# - Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in 
+#   the documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+###############################################################################################################
+set -u
+trap cleanup EXIT SIGINT SIGKILL
+echo "mksdiso Ver. 0.8 | By Nold 2013-2017 | Visit: https://nold.in" 
+
+function usage() {
+	echo "Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]"
+	echo -e "\t-h | Create ISO from Homebrew"
+	echo -e "\t-k | Create ISO from Katana Image\n"	
+}
+
+function check_dependencies() {
+    if ! type mkisofs &>/dev/null ; then
+        if ! type genisoimage &>/dev/null ; then
+            echo "Please install mkisofs or genisoimage!"
+            exit 1
+        else
+            ISOTOOL=genisoimage
+        fi
+    else
+        ISOTOOL=mkisofs
+    fi
+
+    for bin in binhack32 cdirip isofix mksdiso scramble 7z; do
+        if ! type $bin &>/dev/null ; then
+            echo "Please install $bin or include it in \$PATH"
+            exit 1
+        fi
+    done
+}
+
+function cleanup() {
+    rm -rf --one-file-system $EXT_PATH $OUT_PATH $IN_FILE.out 2>/dev/null
+    if [ "$DEL_IN_DIR" == "1" ] ; then
+        rm -rf --one-file-system $IN_DIR 2>/dev/null
+    fi
+}
+
+function hack_lba() { #ARGs: target-dir
+	if [ ! -f $1/1ST_READ.BIN ] ; then
+		if [ -f $1/1st_read.bin ] ; then
+			mv $1/1st_read.bin $1/1ST_READ.BIN
+		else
+            echo "---------------------------------------------------"
+			echo "Couldn't read 1ST_READ.BIN"
+            echo "---------------------------------------------------"
+			return 1
+		fi
+	fi 
+	cp $HOME/.mksdiso/katana/IP.BIN .
+	echo -e -n "$1/1ST_READ.BIN\nIP.BIN\n0\n" | binhack32 
+	rm IP.BIN
+	return 0
+}
+
+#Reads out the name of the "1ST_READ.BIN" - It's different in some games...
+function extract_1st_read_name() { #ARGs: ISO-File
+    FILE=$1
+	echo $(dd if=$FILE skip=96 count=16 bs=1 2>/dev/null | awk '/\.BIN/ {print $1}')
+}
+
+function extract_image() { #ARGs File, Destionation Path
+	IN_FILE=$1
+	OUT_PATH=$2
+	EXT_PATH=$(dirname "$OUT_PATH")/cdi_$(basename "$IN_FILE" | sed 's/[^a-z|A-Z|0-9|\.|\/]//g;')
+	
+	mkdir "$OUT_PATH"
+    if [ ! -d "$OUT_PATH" ] ; then
+        echo "ERROR: Couldn't create directory '$OUT_PATH'"
+        exit 1
+    fi
+
+	#CDI file?
+	if echo $IN_FILE | egrep -q "\.cdi$" ; then
+		mkdir "$EXT_PATH" &> /dev/null
+        if [ ! -d $EXT_PATH ] ; then
+            echo "---------------------------------------------------"
+            echo "ERROR: Couldn't create Directory '$EXT_PATH'"
+            echo "---------------------------------------------------"
+            exit 2
+        fi
+
+		cdirip "$IN_FILE" "$EXT_PATH" | tee "$IN_FILE.out"
+		if [ $(cat "$IN_FILE.out" | wc -l) -le 7 ] ; then
+            echo "---------------------------------------------------"
+			echo "cdirip dosn't look good - Exiting!"
+            echo "---------------------------------------------------"
+			exit 1
+		fi
+
+        # No CDDA-Audio Support in (SD-)ISO :/
+		rm $EXT_PATH/taudio*.wav $EXT_PATH/tdisc.cue &>/dev/null
+
+        echo "---------------------------------------------------"
+		echo "Trying to fix extracted iso..."
+		OG_IFS=$IFS
+		IFS=$'\n'
+		for line in $(grep ^Saving $IN_FILE.out | grep ISO); do
+			ISO_NR=$(echo $line | awk '{print $3}')
+			if [ $ISO_NR -lt 9 ] ; then
+				ISO_NR="0$ISO_NR"
+			fi
+
+			LBA=$(echo $line | awk '{print $9}')
+			
+            echo "---------------------------------------------------"
+			echo "Extracting META-Informations to obtain 1ST_READ.BIN name..."
+			SR_READ=$(extract_1st_read_name $EXT_PATH/tdata$ISO_NR.iso)
+            if [ $? -ne 0 ] ; then
+                echo "ERROR: Couldn't read 1ST_READ.BIN from Image..."
+                exit 2
+            fi
+
+			if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
+				echo "Look's fine... Everything where it belongs!"
+			elif [ "$SR_READ" != "" ] ; then
+                echo "Found that bit** as $SR_READ!"
+			else
+				echo "No 1ST_READ.BIN found in tdata$ISO_NR.iso!"
+				if [ "$ISO_NR" == "01" ] ; then
+					echo "Trying to continue.. Handling as fixed!"
+					mv $EXT_PATH/tdata$ISO_NR.iso $EXT_PATH/fixed_tdata$ISO_NR.iso
+					continue
+				elif [ "$LBA" == "" ] ; then
+					echo "Let's try to fix it..."
+				fi
+			fi
+			isofix $EXT_PATH/tdata$ISO_NR.iso $EXT_PATH/fixed_tdata$ISO_NR.iso $LBA && rm $EXT_PATH/tdata$ISO_NR.iso
+		done
+		rm $IN_FILE.out bootfile.bin header.iso
+		
+        echo "---------------------------------------------------"
+		echo "Extracting data from image... This could take a while..."	
+        echo "---------------------------------------------------"
+		for file in $(ls -1 $EXT_PATH/fixed_tdata*.iso); do
+            7z -bb1 -aoa -o${OUT_PATH} x $file
+		    rm $file
+		done
+        sync
+	else
+		#Just a single ISO
+        echo "---------------------------------------------------"
+		echo "Extracting META-Informations to obtain 1ST_READ.BIN name.."
+		SR_READ=$(extract_1st_read_name $IN_FILE)
+        if [ $? -ne 0 ] ; then
+            echo "ERROR: Couldn't read 1ST_READ.BIN from Image..."
+            exit 2
+        fi
+
+		if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
+			echo "Look's fine... Everything where it belongs!"
+		elif [ ! -z "$SR_READ" ] ; then
+            echo "Found 1ST_READ.BIN as $SR_READ!"
+		fi
+
+        echo "---------------------------------------------------"
+		echo "Extracting Data from Image... This could take a while..."	
+        echo "---------------------------------------------------"
+        7z -bb1 -aoa -o${OUT_PATH} x $IN_FILE
+	fi
+	
+	#Move 1st_read.bin where it belongs!
+	if [ ! -z "$SR_READ" ] ; then
+        if [ "$SR_READ" != "1ST_READ.BIN" ] ; then
+            echo "Moving '$SR_READ' to 1ST_READ.BIN!"
+            mv "$OUT_PATH/$(ls -1 $OUT_PATH | grep -i $SR_READ)" "$OUT_PATH/1ST_READ.BIN"
+        else
+            echo "1ST_READ.BIN looks fine. Skipping moving..."
+        fi 
+	else
+        echo "---------------------------------------------------"
+		echo "ERROR: Moving '$SR_READ' to 1ST_READ.BIN!"
+        echo "---------------------------------------------------"
+        exit 5
+    fi	
+
+	rm -r $EXT_PATH &> /dev/null
+}
+
+function create_homebrew_iso() { #ARGs: Source, Destination, Destination Name
+	IN_DIR=$1
+	OUT_DIR=$2
+	OUT_NAME=$3
+    TMP_DIR=$(mktemp -d)
+
+	if [ ! -f "$IN_DIR/1ST_READ.BIN" ] ; then
+		if [ -f "$IN_DIR/1st_read.bin" ] ; then
+			mv "$IN_DIR/1st_read.bin" "$IN_DIR/1ST_READ.BIN"
+		fi		
+	fi
+	
+	cp "$IN_DIR/1ST_READ.BIN" "/$TMP_DIR/1ST_READ.BIN"
+    echo "---------------------------------------------------"
+	echo "Descrambling 1ST_READ.BIN..."
+	scramble -d "$IN_DIR/1ST_READ.BIN" "$IN_DIR/unscrambled.bin" || (echo "ERROR while descrambling!" && return 1)
+	rm "$IN_DIR/1ST_READ.BIN"
+	mv "$IN_DIR/unscrambled.bin" "$IN_DIR/1ST_READ.BIN"
+	
+    echo "---------------------------------------------------"
+	echo "Repacking ISO..."
+    echo "---------------------------------------------------"
+	$ISOTOOL -V $OUT_NAME -G $HOME/.mksdiso/homebrew/IP.BIN -J -r -l -o "$OUT_DIR/$OUT_NAME" "$IN_DIR"
+
+	rm "$IN_DIR/1ST_READ.BIN"
+	mv "$TMP_DIR/1ST_READ.BIN" "$IN_DIR/1ST_READ.BIN"
+    rm -r $TMP_DIR
+	echo "Done"
+}
+
+function create_katana_iso() { #ARGs: Source, Destination, Destination Name
+	IN_DIR=$1
+		
+	OUT_DIR=$2
+	OUT_NAME=$3
+	
+    echo "---------------------------------------------------"
+	echo "Hacking LBA..."
+	hack_lba $IN_DIR  
+
+    if [ $? -ne 0 ] ; then
+        echo "ERROR: Couldn't hack LBA of 1ST_READ.BIN"
+        exit 4
+    fi
+
+    echo "---------------------------------------------------"
+	echo "Creating ISO..."
+	genisoimage -V $OUT_NAME -G $HOME/.mksdiso/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR" && echo Success!
+}
+
+# Check dependencies
+check_dependencies
+
+#Check Parameters
+if [ $# -lt 2 -o "$1" != "-h" -a "$1" != "-k" ] ; then
+	usage
+	exit 1
+fi
+
+#Check if Source is a directory or a file
+IN_DIR=$(dirname "$2")
+if [ -d "$2" ] ; then
+	DEL_IN_DIR=0
+else
+	IN_FILENAME="$(basename "$2")"
+    IN_NAME=$(echo $IN_FILENAME | sed 's/[^a-z|A-Z|0-9|\.|\/]//g;')
+
+    if [ ! -e "$IN_FILENAME" ] ; then
+        echo "ERROR: Couldn't open file '$IN_FILENAME'"
+        exit 1
+    fi
+
+	mkdir $IN_DIR 2>/dev/null
+    if [ -d "$IN_DIR" ] ; then
+    	extract_image "$IN_DIR/$IN_FILENAME" "$IN_DIR/ext_$IN_NAME"
+    else
+        echo "ERROR: Couldn't create directory '$IN_DIR'"
+        exit 1
+    fi
+	IN_DIR="$IN_DIR/ext_$IN_NAME"
+	DEL_IN_DIR=1
+fi
+
+set +u
+if [ ! -z "$3" ] ; then 
+    #Check if Destination is a directory or a fle
+    OUT_DIR=$(dirname $3)
+    if [ -d "$3" ] ; then
+        OUT_NAME="$(echo $IN_NAME | cut -f1 -d.)-sd.iso"
+    else
+        OUT_NAME=$(basename $3)
+    fi
+else
+    OUT_DIR="./"
+    OUT_NAME=$(echo $IN_NAME | sed 's/\.[a-zA-Z]*$/_sd.iso/')
+fi
+set -u
+echo "Output Filename: '$OUT_NAME'"
+
+#Choose what to do
+case "$1" in 
+	"-k" ) create_katana_iso "$IN_DIR" "$OUT_DIR" "$OUT_NAME" ;;
+	"-h" ) create_homebrew_iso "$IN_DIR" "$OUT_DIR" "$OUT_NAME" ;;
+    *    ) usage ; exit 1 ;;
+esac
+
+echo "---------------------------------------------------"
+echo "All done! SD-ISO saved as $OUT_NAME"
+echo "---------------------------------------------------"
+exit 0

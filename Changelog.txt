@@ -18,3 +18,10 @@ Version 0.7
 - (Added) Support for more than 1 extracted ISO
 - (Improved) Algorithms and small stuff
 - (Improved) Saves image as "<NAME>-sd.iso" if no name is given
+
+Version 0.8
+- (Improved) ISO extraction using 7zip - no root required
+- (Changed) Datafiles now are located in $HOME/.mksdiso
+- (Fixed) Filenames including spaces/special characters
+- (Improved) Tool-detection in burncdi & mksdiso
+- (Improved) Much minor stuff..
