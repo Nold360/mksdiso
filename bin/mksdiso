@@ -254,7 +254,7 @@ function create_katana_iso() { #ARGs: Source, Destination, Destination Name
 
     echo "---------------------------------------------------"
 	echo "Creating ISO..."
-	genisoimage -V $OUT_NAME -G $HOME/.mksdiso/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR" && echo Success!
+	$ISOTOOL -V $OUT_NAME -G $HOME/.mksdiso/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR" && echo Success!
 }
 
 # Check dependencies
