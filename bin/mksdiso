@@ -231,7 +231,7 @@ function create_homebrew_iso() { #ARGs: Source, Destination, Destination Name
     echo "---------------------------------------------------"
 	echo "Repacking ISO..."
     echo "---------------------------------------------------"
-	$ISOTOOL -V $OUT_NAME -G $HOME/.mksdiso/homebrew/IP.BIN -J -r -l -o "$OUT_DIR/$OUT_NAME" "$IN_DIR"
+	$ISOTOOL -V ${OUT_NAME:0:31} -G $HOME/.mksdiso/homebrew/IP.BIN -J -r -l -o "$OUT_DIR/$OUT_NAME" "$IN_DIR"
 
 	rm "$IN_DIR/1ST_READ.BIN"
 	mv "$TMP_DIR/1ST_READ.BIN" "$IN_DIR/1ST_READ.BIN"
@@ -261,7 +261,7 @@ function create_katana_iso() { #ARGs: Source, Destination, Destination Name
 
     echo "---------------------------------------------------"
 	echo "Creating ISO..."
-	$ISOTOOL -V $OUT_NAME -G $HOME/.mksdiso/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR"
+	$ISOTOOL -V ${OUT_NAME:0:31} -G $HOME/.mksdiso/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR"
     if [ -e "$OUT_DIR/$OUT_NAME" ] ; then
         echo "ERROR: $ISOTOOL failed while creating '$OUT_DIR/$OUT_NAME'"
         return 1
