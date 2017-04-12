@@ -52,6 +52,11 @@ function check_dependencies() {
             exit 1
         fi
     done
+
+    if [ ! -d $HOME/.mksdiso ] ; then
+        echo "Data-Dir not found. Please copy the 'mksdiso' from git to $HOME/.mksdiso"
+        exit 1
+    fi
 }
 
 function cleanup() {
