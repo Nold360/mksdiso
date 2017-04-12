@@ -237,7 +237,7 @@ function create_homebrew_iso() { #ARGs: Source, Destination, Destination Name
 	mv "$TMP_DIR/1ST_READ.BIN" "$IN_DIR/1ST_READ.BIN"
     rm -r $TMP_DIR
 
-    if [ -e "$OUT_DIR/$OUT_NAME" ] ; then
+    if [ ! -e "$OUT_DIR/$OUT_NAME" ] ; then
         echo "ERROR: $ISOTOOL failed while creating '$OUT_DIR/$OUT_NAME'"
         return 1
     fi
