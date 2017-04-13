@@ -327,8 +327,13 @@ case "$1" in
 	"-h" ) create_homebrew_iso "$IN_DIR" "$OUT_DIR" "$OUT_NAME" ;;
     *    ) usage ; exit 1 ;;
 esac
+RET=$?
 
 echo "---------------------------------------------------"
-echo "All done! SD-ISO saved as $OUT_NAME"
+if [ $RET -eq 0 ] ; then
+    echo "SUCCESS: SD-ISO saved as $OUT_NAME"
+else
+    echo "ERROR: An errer accrued while creating $OUT_NAME"
+fi
 echo "---------------------------------------------------"
-exit 0
+exit $RET
