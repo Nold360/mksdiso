@@ -216,6 +216,9 @@ function create_homebrew_iso() { #ARGs: Source, Destination, Destination Name
 	if [ ! -f "$IN_DIR/1ST_READ.BIN" ] ; then
 		if [ -f "$IN_DIR/1st_read.bin" ] ; then
 			mv "$IN_DIR/1st_read.bin" "$IN_DIR/1ST_READ.BIN"
+        else
+            echo "ERROR: Couldn't find $IN_DIR/1ST_READ.BIN!"
+            return 4
 		fi		
 	fi
 	
@@ -256,7 +259,7 @@ function create_katana_iso() { #ARGs: Source, Destination, Destination Name
 
     if [ $? -ne 0 ] ; then
         echo "ERROR: Couldn't hack LBA of 1ST_READ.BIN"
-        exit 4
+        return 4
     fi
 
     echo "---------------------------------------------------"
