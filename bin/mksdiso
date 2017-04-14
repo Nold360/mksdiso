@@ -29,6 +29,9 @@ trap cleanup EXIT SIGINT SIGKILL
 IFS=$'\n'
 echo "mksdiso Ver. 0.8 | By Nold 2013-2017 | Visit: https://nold.in" 
 
+# Directory which includes the IP.BIN files included in this git
+DATADIR=$HOME/.mksdiso
+
 function usage() {
 	echo "Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]"
 	echo -e "\t-h | Create ISO from Homebrew"
@@ -54,8 +57,8 @@ function check_dependencies() {
         fi
     done
 
-    if [ ! -d $HOME/.mksdiso ] ; then
-        echo "Data-Dir not found. Please copy the 'mksdiso' from git to $HOME/.mksdiso"
+    if [ ! -d $DATADIR ] ; then
+        echo "Data-Dir not found. Please copy the 'mksdiso' from git to $DATADIR"
         exit 1
     fi
 }
@@ -78,7 +81,7 @@ function hack_lba() { #ARGs: target-dir
 			return 1
 		fi
 	fi 
-	cp $HOME/.mksdiso/katana/IP.BIN .
+	cp $DATADIR/katana/IP.BIN .
 	echo -e -n "$1/1ST_READ.BIN\nIP.BIN\n0\n" | binhack32 
 	rm IP.BIN
 	return 0
@@ -231,7 +234,7 @@ function create_homebrew_iso() { #ARGs: Source, Destination, Destination Name
     echo "---------------------------------------------------"
 	echo "Repacking ISO..."
     echo "---------------------------------------------------"
-	$ISOTOOL -V ${OUT_NAME:0:31} -G $HOME/.mksdiso/homebrew/IP.BIN -J -r -l -o "$OUT_DIR/$OUT_NAME" "$IN_DIR"
+	$ISOTOOL -V ${OUT_NAME:0:31} -G $DATADIR/homebrew/IP.BIN -J -r -l -o "$OUT_DIR/$OUT_NAME" "$IN_DIR"
 
 	rm "$IN_DIR/1ST_READ.BIN"
 	mv "$TMP_DIR/1ST_READ.BIN" "$IN_DIR/1ST_READ.BIN"
@@ -261,7 +264,7 @@ function create_katana_iso() { #ARGs: Source, Destination, Destination Name
 
     echo "---------------------------------------------------"
 	echo "Creating ISO..."
-	$ISOTOOL -V ${OUT_NAME:0:31} -G $HOME/.mksdiso/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR"
+	$ISOTOOL -V ${OUT_NAME:0:31} -G $DATADIR/katana/IP.BIN -J -r -l -o  "$OUT_DIR/$OUT_NAME" "$IN_DIR"
     if [ -e "$OUT_DIR/$OUT_NAME" ] ; then
         echo "ERROR: $ISOTOOL failed while creating '$OUT_DIR/$OUT_NAME'"
         return 1
