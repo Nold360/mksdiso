@@ -26,6 +26,7 @@
 ###############################################################################################################
 set -u
 trap cleanup EXIT SIGINT SIGKILL
+IFS=$'\n'
 echo "mksdiso Ver. 0.8 | By Nold 2013-2017 | Visit: https://nold.in" 
 
 function usage() {
@@ -60,7 +61,7 @@ function check_dependencies() {
 }
 
 function cleanup() {
-    rm -rf --one-file-system $EXT_PATH $OUT_PATH $IN_FILE.out 2>/dev/null
+    rm -rf --one-file-system "$EXT_PATH" "$OUT_PATH" $IN_FILE.out 2>/dev/null
     if [ "$DEL_IN_DIR" == "1" ] ; then
         rm -rf --one-file-system $IN_DIR 2>/dev/null
     fi
@@ -92,7 +93,7 @@ function extract_1st_read_name() { #ARGs: ISO-File
 function extract_image() { #ARGs File, Destionation Path
 	IN_FILE=$1
 	OUT_PATH=$2
-	EXT_PATH=$(dirname "$OUT_PATH")/cdi_$(basename "$IN_FILE" | sed 's/[^a-z|A-Z|0-9|\.|\/]//g;')
+	EXT_PATH="$(dirname "$OUT_PATH")/cdi_$(basename "$IN_FILE" | sed 's/[^a-z|A-Z|0-9|\.|\/]//g;')"
 	
 	mkdir "$OUT_PATH"
     if [ ! -d "$OUT_PATH" ] ; then
@@ -103,7 +104,7 @@ function extract_image() { #ARGs File, Destionation Path
 	#CDI file?
 	if echo $IN_FILE | egrep -q "\.cdi$" ; then
 		mkdir "$EXT_PATH" &> /dev/null
-        if [ ! -d $EXT_PATH ] ; then
+        if [ ! -d "$EXT_PATH" ] ; then
             echo "---------------------------------------------------"
             echo "ERROR: Couldn't create Directory '$EXT_PATH'"
             echo "---------------------------------------------------"
@@ -113,18 +114,16 @@ function extract_image() { #ARGs File, Destionation Path
 		cdirip "$IN_FILE" "$EXT_PATH" | tee "$IN_FILE.out"
 		if [ $(cat "$IN_FILE.out" | wc -l) -le 7 ] ; then
             echo "---------------------------------------------------"
-			echo "cdirip dosn't look good - Exiting!"
+			echo "ERROR: cdirip dosn't look good - Exiting!"
             echo "---------------------------------------------------"
 			exit 1
 		fi
 
         # No CDDA-Audio Support in (SD-)ISO :/
-		rm $EXT_PATH/taudio*.wav $EXT_PATH/tdisc.cue &>/dev/null
+		rm "$EXT_PATH"/taudio*.wav "$EXT_PATH/tdisc.cue" &>/dev/null
 
         echo "---------------------------------------------------"
 		echo "Trying to fix extracted iso..."
-		OG_IFS=$IFS
-		IFS=$'\n'
 		for line in $(grep ^Saving $IN_FILE.out | grep ISO); do
 			ISO_NR=$(echo $line | awk '{print $3}')
 			if [ $ISO_NR -lt 9 ] ; then
@@ -149,24 +148,24 @@ function extract_image() { #ARGs File, Destionation Path
 				echo "No 1ST_READ.BIN found in tdata$ISO_NR.iso!"
 				if [ "$ISO_NR" == "01" ] ; then
 					echo "Trying to continue.. Handling as fixed!"
-					mv $EXT_PATH/tdata$ISO_NR.iso $EXT_PATH/fixed_tdata$ISO_NR.iso
+					mv "$EXT_PATH/tdata$ISO_NR.iso" "$EXT_PATH/fixed_tdata$ISO_NR.iso"
 					continue
 				elif [ "$LBA" == "" ] ; then
 					echo "Let's try to fix it..."
 				fi
 			fi
-			isofix $EXT_PATH/tdata$ISO_NR.iso $EXT_PATH/fixed_tdata$ISO_NR.iso $LBA && rm $EXT_PATH/tdata$ISO_NR.iso
+			isofix "${EXT_PATH}/tdata${ISO_NR}.iso" "${EXT_PATH}/fixed_tdata${ISO_NR}.iso" $LBA &&\
+                    rm "${EXT_PATH}/tdata${ISO_NR}.iso"
 		done
 		rm $IN_FILE.out bootfile.bin header.iso
 		
         echo "---------------------------------------------------"
 		echo "Extracting data from image... This could take a while..."	
         echo "---------------------------------------------------"
-		for file in $(ls -1 $EXT_PATH/fixed_tdata*.iso); do
-            7z -bb1 -aoa -o${OUT_PATH} x $file
+		for file in $(ls -1 "$EXT_PATH"/fixed_tdata*.iso); do
+            7z -bb1 -aoa -o"${OUT_PATH}" x "$file"
 		    rm $file
 		done
-        sync
 	else
 		#Just a single ISO
         echo "---------------------------------------------------"
@@ -186,14 +185,14 @@ function extract_image() { #ARGs File, Destionation Path
         echo "---------------------------------------------------"
 		echo "Extracting Data from Image... This could take a while..."	
         echo "---------------------------------------------------"
-        7z -bb1 -aoa -o${OUT_PATH} x $IN_FILE
+        7z -bb1 -aoa -o"${OUT_PATH}" x "$IN_FILE"
 	fi
 	
 	#Move 1st_read.bin where it belongs!
 	if [ ! -z "$SR_READ" ] ; then
         if [ "$SR_READ" != "1ST_READ.BIN" ] ; then
             echo "Moving '$SR_READ' to 1ST_READ.BIN!"
-            mv "$OUT_PATH/$(ls -1 $OUT_PATH | grep -i $SR_READ)" "$OUT_PATH/1ST_READ.BIN"
+            mv "$OUT_PATH/$SR_READ" "${OUT_PATH}/1ST_READ.BIN"
         else
             echo "1ST_READ.BIN looks fine. Skipping moving..."
         fi 
@@ -203,8 +202,6 @@ function extract_image() { #ARGs File, Destionation Path
         echo "---------------------------------------------------"
         exit 5
     fi	
-
-	rm -r $EXT_PATH &> /dev/null
 }
 
 function create_homebrew_iso() { #ARGs: Source, Destination, Destination Name
@@ -294,7 +291,7 @@ else
         exit 1
     fi
 
-	mkdir $IN_DIR 2>/dev/null
+	mkdir "$IN_DIR" 2>/dev/null
     if [ -d "$IN_DIR" ] ; then
     	extract_image "$IN_DIR/$IN_FILENAME" "$IN_DIR/ext_$IN_NAME"
     else
@@ -333,7 +330,7 @@ echo "---------------------------------------------------"
 if [ $RET -eq 0 ] ; then
     echo "SUCCESS: SD-ISO saved as $OUT_NAME"
 else
-    echo "ERROR: An errer accrued while creating $OUT_NAME"
+    echo "ERROR: An error accrued while creating $OUT_NAME"
 fi
 echo "---------------------------------------------------"
 exit $RET
