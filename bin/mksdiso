@@ -27,7 +27,8 @@
 set -u
 trap cleanup EXIT SIGINT SIGKILL
 IFS=$'\n'
-echo "mksdiso Ver. 0.8 | By Nold 2013-2017 | Visit: https://nold.in" 
+VERSION="0.8-2"
+echo "mksdiso Ver. $VERSION | By Nold 2013-2017 | Visit: https://nold.in"
 
 # Directory which includes the IP.BIN files included in this git
 DATADIR=$HOME/.mksdiso
