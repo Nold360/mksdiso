@@ -23,6 +23,18 @@ Requirements:
 
 
 Installation:
+    On Ubuntu/Debian:
+    ------------------
+    1. Download latest release .deb-file: https://github.com/Nold360/mksdiso/releases
+    2. Install file
+        $ sudo dpkg -i mksdiso-*-all.deb
+
+    3. Install dependencies
+        $ sudo apt-get -f install
+
+
+    On any other Linux-Distribution:
+    ---------------------------------
     0. Clone git & change directory:
         $ git clone https://github.com/Nold360/mksdiso
         $ cd mksdiso
