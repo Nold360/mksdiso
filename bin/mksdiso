@@ -11,16 +11,16 @@ DATADIR=$HOME/.mksdiso
 DEL_IN_DIR=0
 
 function usage() {
-	echo "Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]"
+    echo "Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]"
     echo "This script convertes a "normal" Dreamcast game image into a SD-ISO-Image"
-	echo "For usage with Dreamshell ISO-Loader"
-	echo
-	echo "Paramaters:"
-	echo -e "\t-h | Create ISO from Homebrew"
-	echo -e "\t-k | Create ISO from Katana Image\n"
-	echo
-	echo "Supported Source-Files: CDI, ISO, Directory"
-	echo "Feel free to open issues/contribute at https://github.com/nold360/mksdiso"
+    echo "For usage with Dreamshell ISO-Loader"
+    echo
+    echo "Paramaters:"
+    echo -e "\t-h | Create ISO from Homebrew"
+    echo -e "\t-k | Create ISO from Katana Image\n"
+    echo
+    echo "Supported Source-Files: CDI, ISO, Directory"
+    echo "Feel free to open issues/contribute at https://github.com/nold360/mksdiso"
 }
 
 # Check for needed binaries
@@ -61,195 +61,195 @@ function cleanup() {
 # Params: TARGET_DIR (including 1ST_READ.BIN)
 # Return: 0|1 (Successfull or not)
 function hack_lba() { #ARGs: target-dir
-	if [ ! -f "${1}/1ST_READ.BIN" ] ; then
-		if [ -f "${1}/1st_read.bin" ] ; then
-			mv "${1}/1st_read.bin" "${1}/1ST_READ.BIN"
-		else
-			echo "--> ERROR: Couldn't find 1ST_READ.BIN in '${1}'"
-			return 1
-		fi
-	fi
-	
-	# FIXME: Copy IP.BIN, Workaround for binhack32 :/
-	cp ${DATADIR}/katana/IP.BIN IP.BIN
-	echo -e -n "${1}/1ST_READ.BIN\nIP.BIN\n0\n" | binhack32
-	rm IP.BIN
-	return 0
+    if [ ! -f "${1}/1ST_READ.BIN" ] ; then
+        if [ -f "${1}/1st_read.bin" ] ; then
+            mv "${1}/1st_read.bin" "${1}/1ST_READ.BIN"
+        else
+            echo "--> ERROR: Couldn't find 1ST_READ.BIN in '${1}'"
+            return 1
+        fi
+    fi
+    
+    # FIXME: Copy IP.BIN, Workaround for binhack32 :/
+    cp ${DATADIR}/katana/IP.BIN IP.BIN
+    echo -e -n "${1}/1ST_READ.BIN\nIP.BIN\n0\n" | binhack32
+    rm IP.BIN
+    return 0
 }
 
 # Reads out the name of the "1ST_READ.BIN" - It's different in some games...
 # Params: ISO-File
 # Return: none - echoes 1st_read.bin-name
 function extract_1st_read_name() { #ARGs: ISO-File
-	st_read=$(dd if=${1} skip=96 count=16 bs=1 2>/dev/null | awk '/\.BIN/ {print $1}')
-	if [ -z "$st_read" ] ; then
-		echo "--> WARNING: Didn't find 1ST_READ.BIN using dd.." >/dev/stderr
-		echo " --> Trying to continue..." >/dev/stderr
-		echo "1ST_READ.BIN"
+    st_read=$(dd if=${1} skip=96 count=16 bs=1 2>/dev/null | awk '/\.BIN/ {print $1}')
+    if [ -z "$st_read" ] ; then
+        echo "--> WARNING: Didn't find 1ST_READ.BIN using dd.." >/dev/stderr
+        echo " --> Trying to continue..." >/dev/stderr
+        echo "1ST_READ.BIN"
     else
         echo $st_read
-	fi
+    fi
 }
 
 # Extract CDI/ISO Images, hack LBA & Stuff
 # Params:
 #  IN_FILE - CDI/ISO
 function extract_image() {
-	set -u
-	IN_FILE=$1
+    set -u
+    IN_FILE=$1
 
-	# Path for CDI extraction
-	EXT_PATH=$2
+    # Path for CDI extraction
+    EXT_PATH=$2
 
-	# Logfile for CDI-RIP
-	LOGFILE=$(mktemp /tmp/mksdiso_${USER}_log.XXXXX)
+    # Logfile for CDI-RIP
+    LOGFILE=$(mktemp /tmp/mksdiso_${USER}_log.XXXXX)
 
-	# Path for iso extraction
-	OUT_PATH="${EXT_PATH}/data"
+    # Path for iso extraction
+    OUT_PATH="${EXT_PATH}/data"
 
-	#CDI file?
-	if echo $IN_FILE | egrep -q "\.cdi$" ; then
-		cdirip "$IN_FILE" "$EXT_PATH" | tee "$LOGFILE"
-		if [ $(cat "$LOGFILE" | wc -l) -le 7 ] ; then
+    #CDI file?
+    if echo $IN_FILE | egrep -q "\.cdi$" ; then
+        cdirip "$IN_FILE" "$EXT_PATH" | tee "$LOGFILE"
+        if [ $(cat "$LOGFILE" | wc -l) -le 7 ] ; then
             echo "---------------------------------------------------"
-			echo " ERROR: cdirip output doesn't look good - Exiting!"
+            echo " ERROR: cdirip output doesn't look good - Exiting!"
             echo "---------------------------------------------------"
-			exit 1
-		fi
+            exit 1
+        fi
 
         # No CDDA-Audio Support in (SD-)ISO :/
-		rm "$EXT_PATH"/taudio*.wav "$EXT_PATH/tdisc.cue" &>/dev/null
+        rm "$EXT_PATH"/taudio*.wav "$EXT_PATH/tdisc.cue" &>/dev/null
 
-		echo "--> Trying to fix extracted iso(s)..."
-		for line in $(grep ^Saving $LOGFILE); do
-			ISO_NR=$(echo $line | awk '{print $3}')
-			if [ $ISO_NR -lt 9 ] ; then
-				ISO_NR="0$ISO_NR"
-			fi
+        echo "--> Trying to fix extracted iso(s)..."
+        for line in $(grep ^Saving $LOGFILE); do
+            ISO_NR=$(echo $line | awk '{print $3}')
+            if [ $ISO_NR -lt 9 ] ; then
+                ISO_NR="0$ISO_NR"
+            fi
 
-			LBA=$(echo $line | awk '{print $NF}')
-			if [ -z "$LBA" ] ; then
-				echo "--> WARNING: Invalid LBA: ${LBA}... Trying to continue.."
-				LBA=0
-			fi
-			
-			echo "--> Extracting META-Informations to obtain 1ST_READ.BIN name..."
-			SR_READ=$(extract_1st_read_name $EXT_PATH/tdata$ISO_NR.iso)
+            LBA=$(echo $line | awk '{print $NF}')
+            if [ -z "$LBA" ] ; then
+                echo "--> WARNING: Invalid LBA: ${LBA}... Trying to continue.."
+                LBA=0
+            fi
+            
+            echo "--> Extracting META-Informations to obtain 1ST_READ.BIN name..."
+            SR_READ=$(extract_1st_read_name $EXT_PATH/tdata$ISO_NR.iso)
             if [ $? -ne 0 ] || [ -z "$SR_READ" ] ; then
                 echo "--> WARNING: Couldn't read 1ST_READ.BIN from Image..."
-				echo " --> Trying to continue anyways..."
+                echo " --> Trying to continue anyways..."
                 SR_READ="1ST_READ.BIN"
             fi
 
-			# Test 1st_read
-			if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
-				echo " -- Look's fine... Everything where it belongs!"
-			elif [ "$SR_READ" != "" ] ; then
+            # Test 1st_read
+            if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
+                echo " -- Look's fine... Everything where it belongs!"
+            elif [ "$SR_READ" != "" ] ; then
                 echo "--> Found 1ST_READ.BIN as $SR_READ!"
-			else
-				echo "--> WARNING: No 1ST_READ.BIN found in tdata$ISO_NR.iso!"
-				if [ "$ISO_NR" == "01" ] ; then
-					echo " --> Trying to continue.. Handling as fixed!"
-					continue
-				fi
-			fi
+            else
+                echo "--> WARNING: No 1ST_READ.BIN found in tdata$ISO_NR.iso!"
+                if [ "$ISO_NR" == "01" ] ; then
+                    echo " --> Trying to continue.. Handling as fixed!"
+                    continue
+                fi
+            fi
 
-			# Fix iso LBA
-			if [ "$LBA" != "0" ] ; then
-				isofix "${EXT_PATH}/tdata${ISO_NR}.iso" "${EXT_PATH}/fixed_tdata${ISO_NR}.iso" $LBA &&\
+            # Fix iso LBA
+            if [ "$LBA" != "0" ] ; then
+                isofix "${EXT_PATH}/tdata${ISO_NR}.iso" "${EXT_PATH}/fixed_tdata${ISO_NR}.iso" $LBA &&\
                     rm "${EXT_PATH}/tdata${ISO_NR}.iso"
-			else
-					mv "$EXT_PATH/tdata$ISO_NR.iso" "$EXT_PATH/fixed_tdata$ISO_NR.iso"
-			fi
-		done
+            else
+                    mv "$EXT_PATH/tdata$ISO_NR.iso" "$EXT_PATH/fixed_tdata$ISO_NR.iso"
+            fi
+        done
 
-		echo " - Extracting data from image... This could take a while..."
-		for file in $(ls -1 "$EXT_PATH"/fixed_tdata*.iso); do
+        echo " - Extracting data from image... This could take a while..."
+        for file in $(ls -1 "$EXT_PATH"/fixed_tdata*.iso); do
             7z -bb1 -aoa -o"${OUT_PATH}" x "$file"
-		    #rm $file
-		done
-	else
-		#Just a single ISO
-		echo " - Extracting META-Informations to obtain 1ST_READ.BIN name.."
-		SR_READ=$(extract_1st_read_name $IN_FILE)
+            #rm $file
+        done
+    else
+        #Just a single ISO
+        echo " - Extracting META-Informations to obtain 1ST_READ.BIN name.."
+        SR_READ=$(extract_1st_read_name $IN_FILE)
         if [ $? -ne 0 ] || [ -z "$SR_READ" ] ; then
             echo "--> WARNING: Couldn't read 1ST_READ.BIN from Image..."
-			echo " --> Trying to continue anyways..."
+            echo " --> Trying to continue anyways..."
             SR_READ="1ST_READ.BIN"
         fi
 
-		if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
-			echo "--> Look's fine... Everything where it belongs!"
-		elif [ ! -z "$SR_READ" ] ; then
+        if [ "$SR_READ" == "1ST_READ.BIN" ] ;then
+            echo "--> Look's fine... Everything where it belongs!"
+        elif [ ! -z "$SR_READ" ] ; then
             echo "--> Found 1ST_READ.BIN as $SR_READ!"
-		fi
+        fi
 
-		echo "--> Extracting Data from Image... This could take a while..."
+        echo "--> Extracting Data from Image... This could take a while..."
         7z -bb1 -aoa -o"${OUT_PATH}" x "$IN_FILE"
-	fi
-	
-	#Move 1st_read.bin where it belongs!
-	if [ ! -z "$SR_READ" ] ; then
+    fi
+    
+    #Move 1st_read.bin where it belongs!
+    if [ ! -z "$SR_READ" ] ; then
         if [ "$SR_READ" != "1ST_READ.BIN" ] ; then
             echo "--> Moving '$SR_READ' to 1ST_READ.BIN!"
             mv "$OUT_PATH/$SR_READ" "${OUT_PATH}/1ST_READ.BIN"
         else
             echo "--> 1ST_READ.BIN looks fine. Skipping moving..."
         fi
-	elif [ ! -e "$OUT_PATH/1ST_READ.BIN" ] ; then
-		echo "--> ERROR: Moving '$SR_READ' to 1ST_READ.BIN!"
+    elif [ ! -e "$OUT_PATH/1ST_READ.BIN" ] ; then
+        echo "--> ERROR: Moving '$SR_READ' to 1ST_READ.BIN!"
         exit 5
     fi
 }
 
 function create_homebrew_iso() { #ARGs: Source, Destination
-	IN_DIR=$1
-	OUT_NAME=$2
+    IN_DIR=$1
+    OUT_NAME=$2
     TMP_DIR=$(mktemp -d /tmp/mksdiso_${USER}.XXXXX)
 
-	if [ ! -f "$IN_DIR/1ST_READ.BIN" ] ; then
-		if [ -f "$IN_DIR/1st_read.bin" ] ; then
-			mv "$IN_DIR/1st_read.bin" "$IN_DIR/1ST_READ.BIN"
+    if [ ! -f "$IN_DIR/1ST_READ.BIN" ] ; then
+        if [ -f "$IN_DIR/1st_read.bin" ] ; then
+            mv "$IN_DIR/1st_read.bin" "$IN_DIR/1ST_READ.BIN"
         else
             echo "--> ERROR: Couldn't find $IN_DIR/1ST_READ.BIN!"
             return 4
-		fi
-	fi
-	
-	cp "$IN_DIR/1ST_READ.BIN" "$TMP_DIR/1ST_READ.BIN"
-	echo "--> Descrambling 1ST_READ.BIN..."
-	scramble -d "$IN_DIR/1ST_READ.BIN" "$IN_DIR/unscrambled.bin" ||\
+        fi
+    fi
+    
+    cp "$IN_DIR/1ST_READ.BIN" "$TMP_DIR/1ST_READ.BIN"
+    echo "--> Descrambling 1ST_READ.BIN..."
+    scramble -d "$IN_DIR/1ST_READ.BIN" "$IN_DIR/unscrambled.bin" ||\
                     (echo " -- ERROR while descrambling!" && return 1)
 
-	rm "$IN_DIR/1ST_READ.BIN"
-	mv "$IN_DIR/unscrambled.bin" "$IN_DIR/1ST_READ.BIN"
-	
-	echo "--> Repacking ISO..."
-	$ISOTOOL -V ${OUT_NAME:0:31} -G $DATADIR/homebrew/IP.BIN -J -r -l -o "$OUT_NAME" "$IN_DIR"
+    rm "$IN_DIR/1ST_READ.BIN"
+    mv "$IN_DIR/unscrambled.bin" "$IN_DIR/1ST_READ.BIN"
+    
+    echo "--> Repacking ISO..."
+    $ISOTOOL -V ${OUT_NAME:0:31} -G $DATADIR/homebrew/IP.BIN -J -r -l -o "$OUT_NAME" "$IN_DIR"
 
-	rm "$IN_DIR/1ST_READ.BIN"
-	mv "$TMP_DIR/1ST_READ.BIN" "$IN_DIR/1ST_READ.BIN"
+    rm "$IN_DIR/1ST_READ.BIN"
+    mv "$TMP_DIR/1ST_READ.BIN" "$IN_DIR/1ST_READ.BIN"
     rm -r $TMP_DIR
 
     if [ ! -e "$OUT_NAME" ] ; then
         echo "--> ERROR: $ISOTOOL failed while creating '$OUT_NAME'"
         return 1
     fi
-	return 0
+    return 0
 }
 
 function create_katana_iso() { #ARGs: Source, Destination
-	IN_DIR=$1
-	OUT_NAME=$2
-	
-	echo "--> Hacking LBA..."
+    IN_DIR=$1
+    OUT_NAME=$2
+    
+    echo "--> Hacking LBA..."
     if ! hack_lba $IN_DIR ; then
         echo "--> ERROR: Couldn't hack LBA of 1ST_READ.BIN"
         return 4
     fi
 
-	echo "--> Creating SD-ISO..."
-	$ISOTOOL -V ${OUT_NAME:0:31} -G $DATADIR/katana/IP.BIN -J -r -l -o  "$OUT_NAME" "$IN_DIR"
+    echo "--> Creating SD-ISO..."
+    $ISOTOOL -V ${OUT_NAME:0:31} -G $DATADIR/katana/IP.BIN -J -r -l -o  "$OUT_NAME" "$IN_DIR"
     if [ ! -e "$OUT_NAME" ] ; then
         echo "--> ERROR: $ISOTOOL failed while creating '$OUT_NAME'"
         return 1
@@ -262,56 +262,56 @@ check_dependencies
 
 #Check Parameters
 if [ $# -lt 2 -o "$1" != "-h" -a "$1" != "-k" ] ; then
-	usage
-	exit 1
+    usage
+    exit 1
 fi
 set -u
 
 #Check if Source is a directory or a file
 if [ -d "$2" ] ; then
-	IN_DIR="$2"
+    IN_DIR="$2"
 else
-	IN_FILE="$2"
+    IN_FILE="$2"
     IN_NAME=$(basename "$2" | sed 's/[^a-z|A-Z|0-9|\.|\/]//g;')
 
-	# IN_DIR for cdi extraction
-	IN_DIR=$(mktemp -d /tmp/mksdiso_${USER}.XXXXX)
+    # IN_DIR for cdi extraction
+    IN_DIR=$(mktemp -d /tmp/mksdiso_${USER}.XXXXX)
 
-	# RAW Data dir for (SD-)ISO (re)packing
-	IN_DATA_DIR="${IN_DIR}/data"
+    # RAW Data dir for (SD-)ISO (re)packing
+    IN_DATA_DIR="${IN_DIR}/data"
 
-	# Remove IN_DIR if finished
-	DEL_IN_DIR=1
+    # Remove IN_DIR if finished
+    DEL_IN_DIR=1
 fi
 
 set +u
 if [ ! -z "$3" ] ; then
     #Check if Destination is a directory or a fle
     if [ -d "$3" ] ; then
-    	OUT_NAME=$(echo $IN_NAME | sed 's/\.[a-zA-Z]*$/_sd.iso/')
+        OUT_NAME=$(echo $IN_NAME | sed 's/\.[a-zA-Z]*$/_sd.iso/')
     else
         OUT_NAME=$3
     fi
 else
-	# Create a output-filename by using the input file
+    # Create a output-filename by using the input file
     OUT_NAME=$(echo $IN_NAME | sed 's/\.[a-zA-Z]*$/_sd.iso/')
-	if [ -e "$OUT_NAME" ] ; then
-		echo "--> ERROR: Output-File '${OUT_NAME}' already exists, select a different one!"
-		exit 1
-	fi
+    if [ -e "$OUT_NAME" ] ; then
+        echo "--> ERROR: Output-File '${OUT_NAME}' already exists, select a different one!"
+        exit 1
+    fi
 fi
 echo "--> Output File: '$OUT_NAME'"
 
 # Extract Image if needed...
 if [ ! -z "$IN_FILE" ] ; then
-	set -u
-	extract_image "$IN_FILE" "$IN_DIR"
+    set -u
+    extract_image "$IN_FILE" "$IN_DIR"
 fi
 
 #Choose what to do with data/extracted image
 case "$1" in
-	"-k" ) create_katana_iso "$IN_DATA_DIR" "$OUT_NAME" ;;
-	"-h" ) create_homebrew_iso "$IN_DATA_DIR" "$OUT_NAME" ;;
+    "-k" ) create_katana_iso "$IN_DATA_DIR" "$OUT_NAME" ;;
+    "-h" ) create_homebrew_iso "$IN_DATA_DIR" "$OUT_NAME" ;;
     *    ) usage ; exit 1 ;;
 esac
 RET=$?
