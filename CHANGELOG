@@ -25,3 +25,10 @@ Version 0.8
 - (Fixed) Filenames including spaces/special characters
 - (Improved) Tool-detection in burncdi & mksdiso
 - (Improved) Much minor stuff..
+
+Version 0.9
+- (Improved) A lot of code / Error-Catching / Output / ...
+- (Changed) CDI/ISOs are now extracted to /tmp/mksdio_USERNAME_XXXXX
+- (Changed) Output-File will be written in current working directory, if no filename is given
+- (Fixed) Error when only one Session in CDI
+- (Fixed) Error when 1ST_READ can't be found using "dd"
