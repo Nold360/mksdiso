@@ -1,7 +1,7 @@
 #!/bin/bash
 trap cleanup EXIT SIGINT SIGKILL
 IFS=$'\n'
-VERSION="0.9"
+VERSION="0.9.1"
 echo "mksdiso Ver. $VERSION | By Nold 2013-2017 | Visit: https://nold.in"
 
 # Directory which includes the IP.BIN files included in mksdiso source git
@@ -51,7 +51,8 @@ function check_dependencies() {
 
 # Cleanup temporary files on exit
 function cleanup() {
-    rm -rf --one-file-system "$EXT_PATH" $LOGFILE 2>/dev/null
+    set +u
+    rm -rf --one-file-system "$EXT_PATH" $LOGFILE $TMP_DIR 2>/dev/null
     if [ "$DEL_IN_DIR" == "1" ] ; then
         rm -rf --one-file-system $IN_DIR 2>/dev/null
     fi
@@ -268,8 +269,13 @@ fi
 set -u
 
 #Check if Source is a directory or a file
-if [ -d "$2" ] ; then
+if [ ! -e "$2" ] ; then
+    echo "--> ERROR: Input file or directory '$2' doesn't exist."
+    exit 1
+elif [ -d "$2" ] ; then
     IN_DIR="$2"
+    IN_NAME="$2"
+    IN_DATA_DIR="$2"
 else
     IN_FILE="$2"
     IN_NAME=$(basename "$2" | sed 's/[^a-z|A-Z|0-9|\.|\/]//g;')
@@ -286,19 +292,14 @@ fi
 
 set +u
 if [ ! -z "$3" ] ; then
-    #Check if Destination is a directory or a fle
-    if [ -d "$3" ] ; then
-        OUT_NAME=$(echo $IN_NAME | sed 's/\.[a-zA-Z]*$/_sd.iso/')
-    else
-        OUT_NAME=$3
-    fi
+    OUT_NAME=$3
 else
     # Create a output-filename by using the input file
-    OUT_NAME=$(echo $IN_NAME | sed 's/\.[a-zA-Z]*$/_sd.iso/')
-    if [ -e "$OUT_NAME" ] ; then
-        echo "--> ERROR: Output-File '${OUT_NAME}' already exists, select a different one!"
-        exit 1
-    fi
+    OUT_NAME=$(echo $IN_NAME | sed 's/\/$//' | sed 's/$/_sd.iso/')
+fi
+if [ -e "$OUT_NAME" ] ; then
+    echo "--> ERROR: Output-File '${OUT_NAME}' already exists, select a different one!"
+    exit 1
 fi
 echo "--> Output File: '$OUT_NAME'"
 
@@ -318,7 +319,7 @@ RET=$?
 
 echo "---------------------------------------------------"
 if [ $RET -eq 0 ] ; then
-    echo "--> SUCCESS: SD-ISO saved as $OUT_NAME"
+    echo "--> Success: SD-ISO saved as $OUT_NAME"
 else
     echo "--> ERROR: An error accrued while creating $OUT_NAME"
 fi
