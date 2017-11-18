@@ -1,0 +1,37 @@
+
+
+					BINHACK32.EXE
+					   1.0.0.5
+
+
+	IP.BIN/BOOT.BIN SB Hacker - 32bit BINHACK Clone - FamilyGuy 2011 - 2014
+
+	This is my attemp at creating a clone of binhack.exe in a 32-bit executable
+	format to be compatible with non-16bit operating system (aka 64bit Win7).
+	The Goal is to make it a *clone* so it can be used the same way as the
+	original, just rename it BINHACK.EXE and it should works with old batch
+	files. It'll also enable the VGA flag in the ip.bin, as there's no good
+	reason not to do so. 
+	
+	A big thank you goes to SiZiOUS for optimizing and cleaning my source code!
+
+	FamilyGuy 2011 - 2014
+
+				    --- New in 1.0.0.2 ---
+	If it detects a wince file that has been processed by
+	bincon.exe, it'll set the OS flag to 0 in ip.bin, so no need to do it 
+	manually as with original binhack. This also fix a bug in 1.0.0.1 where 
+	bincon'd bins where actually hacked when they should not have been.
+
+				    --- New in 1.0.0.3 ---
+	Some improvements to the makefile for Linux compiling, "make linux" compiles
+	binhack32 under linux and compress it with upx as it should. 
+	Made both a bat and a bash test script.
+	Source-Code released under WTF Public License v2. 
+
+				    --- New in 1.0.0.4 ---
+	Source-Code released under GNU General Public License (GPLv3). 
+
+				    --- New in 1.0.0.5 ---
+        Makefile edited for compatibility with Mac OS X. Thanks to darcagn.
+        Compile by executing "make osx".

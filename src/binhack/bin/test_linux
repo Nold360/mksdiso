@@ -1,0 +1,34 @@
+#!/bin/bash
+
+echo "binhack32 test automatic input bash file"
+
+cp TEST/*.BIN .
+
+echo ""
+echo "Testing Katana binary ..."
+
+echo "1ST_READ.BIN" > katana.txt
+echo "ip.katana" >> katana.txt
+echo "0" >> katana.txt
+./binhack32 < katana.txt
+rm katana.txt > /dev/null 2>&1
+
+echo ""
+echo "Testing WinCE binary ..."
+
+echo "0WINCEOS.BIN" > wince.txt
+echo "ip.wince" >> wince.txt
+./binhack32 < wince.txt
+rm wince.txt > /dev/null 2>&1
+
+echo ""
+echo "Testing Bincon'd binary ..."
+
+echo "BINCONED.BIN" > bincon.txt
+echo "ip.binconed" >> bincon.txt
+./binhack32 < bincon.txt
+rm bincon.txt > /dev/null 2>&1
+
+echo ""
+echo "DONE!"
+read -p "Press any key to continue..."

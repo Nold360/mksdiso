@@ -1,0 +1,5 @@
+#!/bin/bash
+
+make clean-all
+
+read -p "Press any key to continue..."
