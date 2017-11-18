@@ -9,12 +9,12 @@
 # Compiler
 CC=gcc
 # Parameters given to the compiler
-CFLAGS=-s -O1  -I/usr/include -I/include    
+CFLAGS=-s -O1  -I/usr/include -I/include -lm
 # Output filename (*.exe)
 OUTPUT="cdirip"
 
 # Source files
-SRCS="audio.c" "cdirip.c" "buffer.c" "cdi.c" "common.c" 
+SRCS="audio.c" "cdirip.c" "buffer.c" "cdi.c" "common.c"
 # Output object files (*.o)
 OBJS="audio.o" "cdirip.o" "buffer.o" "cdi.o" "common.o"
 
@@ -31,7 +31,7 @@ test: all
 	./$(OUTPUT)
 
 clean:
-	rm *.o
+	rm *.o cdirip
 
 mrproper: clean
 
