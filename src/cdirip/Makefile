@@ -33,5 +33,8 @@ test: all
 clean:
 	rm *.o cdirip
 
+install: all
+	cp cdirip /usr/local/bin/
+
 mrproper: clean
 
