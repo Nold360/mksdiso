@@ -1,6 +1,6 @@
 # build all
 
-DIRS = cdirip scramble makeip isofix binhack32
+DIRS = cdirip scramble makeip isofix binhack
 
 all:
 	for i in $(DIRS); do make -C $$i || true; done
