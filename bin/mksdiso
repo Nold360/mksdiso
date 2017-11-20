@@ -128,7 +128,7 @@ function extract_image() {
                 ISO_NR="0$ISO_NR"
             fi
 
-            LBA=$(echo $line | awk '{print $NF}')
+            LBA=$(echo $line | awk '{print $9}')
             if [ -z "$LBA" ] ; then
                 echo "--> WARNING: Invalid LBA: ${LBA}... Trying to continue.."
                 LBA=0
