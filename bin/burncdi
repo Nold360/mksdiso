@@ -48,8 +48,15 @@ else
         OVERBURN=""
 fi
 
+if [ "$1" == "-c" ] ; then
+        DEVICE="$2"
+        shift 2
+else
+        DEVICE="/dev/cdrw"
+fi
+
 CDIIMG="$1"
-DEVICE="/dev/cdrw"
+
 
 function show_help {
     if [ $# -gt 0 ] ; then
@@ -59,9 +66,10 @@ function show_help {
     fi
     echo "BurnCDI by milksheik, improved by Nold"
     echo "Usage:"
-    echo "       $0 [-f] <CDI-File>"
+    echo "       $0 [-f] [-c <CD DRIVE>] <CDI-File>"
     echo
     echo "       -f | Force burning of Image & enable overburning"
+    echo "       -c | Path to CD writer drive if not /dev/cdrw"
     exit 1
 }
 
