@@ -41,15 +41,28 @@ else
     BURNBIN=wodim
 fi
 
-if [ "$1" == "-f" ] ; then
-        OVERBURN="-overburn"
-        shift
-else
-        OVERBURN=""
-fi
-
-CDIIMG="$1"
+OVERBURN=""
 DEVICE="/dev/cdrw"
+while getopts "fc:" opt; do
+    case $opt in
+        c)
+            DEVICE="$OPTARG"
+            ;;
+        f)
+            OVERBURN="-overburn"
+            ;;
+        \?)
+            echo "Unknown options -$OPTARG."
+            exit 1
+            ;;
+	:)
+            echo "-$OPTARG requires argument."
+            exit 1
+            ;;
+    esac
+done
+
+CDIIMG="${@:$OPTIND:1}"
 
 function show_help {
     if [ $# -gt 0 ] ; then
@@ -59,9 +72,10 @@ function show_help {
     fi
     echo "BurnCDI by milksheik, improved by Nold"
     echo "Usage:"
-    echo "       $0 [-f] <CDI-File>"
+    echo "       $0 [-f] [-c <CDRW-DRIVE>] <CDI-File>"
     echo
     echo "       -f | Force burning of Image & enable overburning"
+    echo "       -c | Path to CD writer if not /dev/cdrw"
     exit 1
 }
 
