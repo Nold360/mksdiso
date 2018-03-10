@@ -62,7 +62,7 @@ while getopts "fc:" opt; do
     esac
 done
 
-CDIIMG=${@:$OPTIND:1}
+CDIIMG="${@:$OPTIND:1}"
 
 function show_help {
     if [ $# -gt 0 ] ; then
