@@ -62,7 +62,7 @@ while getopts "fc:" opt; do
     esac
 done
 
-CDIIMG="${@:$OPTIND:1}"
+CDIIMG=${@:$OPTIND:1}
 
 function show_help {
     if [ $# -gt 0 ] ; then
@@ -97,13 +97,7 @@ if [ ! -e "$DEVICE" ] ; then
         show_help "ERROR: Couldn't open CD-R: $DEVICE"
 fi
 
-EXT_DIR="ext_$(basename $CDIIMG)"
-if [ -e $EXT_DIR ] ; then
-    echo "ERROR: Couldn't unpack to '$EXT_DIR' - File exists"
-    exit 2
-fi
-
-mkdir ${EXT_DIR}
+EXT_DIR=$(mktemp -d)
 if [ -d ${EXT_DIR} ] ; then 
     cdirip "${CDIIMG}" "${EXT_DIR}" -cdrecord || \
     show_help "ERROR: ${EXT_DIR} dosn't exist!"
