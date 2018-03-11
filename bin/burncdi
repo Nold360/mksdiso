@@ -24,7 +24,6 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################################################
-trap cleanup EXIT SIGINT SIGKILL
 
 # Test if cdirip is available in $PATH
 if ! type cdirip &> /dev/null ; then echo "Please install cdirip" ;  exit 1 ; fi
@@ -37,19 +36,9 @@ if ! type wodim &> /dev/null ; then
     else
         BURNBIN=cdrecord
     fi
-else 
+else
     BURNBIN=wodim
 fi
-
-if [ "$1" == "-f" ] ; then
-        OVERBURN="-overburn"
-        shift
-else
-        OVERBURN=""
-fi
-
-CDIIMG="$1"
-DEVICE="/dev/cdrw"
 
 function show_help {
     if [ $# -gt 0 ] ; then
@@ -57,11 +46,12 @@ function show_help {
         echo $@
         echo "---------------------------------------------------"
     fi
-    echo "BurnCDI by milksheik, improved by Nold"
+    echo "BurnCDI - Script to burn CDI-Images to disk using Linux"
     echo "Usage:"
-    echo "       $0 [-f] <CDI-File>"
+    echo "       $0 [-f] [-c <CDRW-DRIVE>] <CDI-File>"
     echo
     echo "       -f | Force burning of Image & enable overburning"
+    echo "       -c | Path to CD writer if not /dev/cdrw"
     exit 1
 }
 
@@ -71,28 +61,36 @@ function cleanup {
     fi
 }
 
-if [ $# -lt 1 ] ; then
-        show_help
-fi
+OVERBURN=""
+DEVICE="/dev/cdrw"
+while getopts "fc:" opt; do
+    case $opt in
+        c)
+            DEVICE="$OPTARG"
+            [ ! -e $DEVICE ] && show_help "Device '$DEVICE' does not exist"
+            ;;
+        f)
+            OVERBURN="-overburn"
+            ;;
+        :)
+            show_help "-$opt requires argument."
+            ;;
+        *)
+            show_help
+            ;;
+    esac
+done
 
+CDIIMG="${@:$OPTIND:1}"
 if [ ! -f "$CDIIMG" ] ; then
-        show_help "ERROR: Couldn't open CDI-File: $CDIIMG"
+    show_help "ERROR: Couldn't open CDI-File: $CDIIMG"
 fi
 
-if [ ! -e "$DEVICE" ] ; then
-        show_help "ERROR: Couldn't open CD-R: $DEVICE"
-fi
-
-EXT_DIR="ext_$(basename $CDIIMG)"
-if [ -e $EXT_DIR ] ; then
-    echo "ERROR: Couldn't unpack to '$EXT_DIR' - File exists"
-    exit 2
-fi
-
-mkdir ${EXT_DIR}
-if [ -d ${EXT_DIR} ] ; then 
+trap cleanup EXIT SIGINT SIGKILL
+EXT_DIR=$(mktemp -d)
+if [ -d ${EXT_DIR} ] ; then
     cdirip "${CDIIMG}" "${EXT_DIR}" -cdrecord || \
-    show_help "ERROR: ${EXT_DIR} dosn't exist!"
+    show_help "ERROR while unpacking CDI using cdirip!"
 fi
 
 if [ $(du -s ${EXT_DIR} 2> /dev/null | awk '{print $1}') -ge 700000 -a "$OVERBURN" == "" ] ; then
