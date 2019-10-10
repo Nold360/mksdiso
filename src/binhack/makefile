@@ -26,7 +26,8 @@ OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)binhack.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
 all : $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 	$(STRIP) $(TARGET)
-	$(PACKER) $(PACKEROPT) $(TARGET)
+	-$(PACKER) $(PACKEROPT) $(TARGET)
+
 # Linux compiling
 linux : $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
