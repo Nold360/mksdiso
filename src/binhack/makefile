@@ -17,7 +17,7 @@ SRC_DIR = src/
 BIN_DIR = bin/
 
 # files
-BIN = binhack32
+BIN = binhack
 TARGET = $(BIN_DIR)$(BIN)$(OS:Windows_NT=.exe)
 LIBS =
 OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)binhack.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
@@ -48,7 +48,7 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.rc
 	$(WINDRES) -i $< -o $@
 
 install: linux
-	cp bin/binhack32 bin/binhack64 /usr/local/bin/
+	cp $(TARGET) /usr/local/bin/
 
 clean:
 	$(RM) -f $(OBJS)
