@@ -8,7 +8,7 @@ RM = rm
 # flags
 # add the -DDEBUG directive to CPPFLAGS to compile in DEBUG mode.
 #CPPFLAGS = -O3 -DDEBUG
-CPPFLAGS = -O3 -fPIC
+CPPFLAGS += -O3 -fPIC
 PACKEROPT = -9 --compress-resources=0
 
 # directories
@@ -51,7 +51,7 @@ install: linux
 	cp bin/binhack32 bin/binhack64 /usr/local/bin/
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJS) || true
 
-clean-all:
-	$(RM) $(OBJS) $(TARGET)
+clean-all: clean
+	$(RM) $(OBJS) $(TARGET) || true
