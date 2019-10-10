@@ -28,11 +28,8 @@ all : $(OBJS)
 	$(STRIP) $(TARGET)
 	-$(PACKER) $(PACKEROPT) $(TARGET)
 
-# Linux compiling
-linux : $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
-	$(STRIP) $(TARGET)
-	-$(PACKER) $(PACKEROPT) $(TARGET)
+# Linux compiling (same as all)
+linux : all
 
 # Mac OSX compiling, thanks to darcagn
 osx : $(OBJS)
