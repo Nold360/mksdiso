@@ -11,7 +11,7 @@ help:
 	exit 0
 
 build:
-	cd src; make
+	cd src && $(MAKE)
 
 package: build
 	mkdir -p $(BUILD_DIR)/usr/bin $(BUILD_DIR)/usr/share/mksdiso $(BUILD_DIR)/DEBIAN
