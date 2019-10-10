@@ -51,7 +51,7 @@ install: linux
 	cp bin/binhack32 bin/binhack64 /usr/local/bin/
 
 clean:
-	$(RM) $(OBJS) || true
+	$(RM) -f $(OBJS)
 
 clean-all: clean
-	$(RM) $(OBJS) $(TARGET) || true
+	$(RM) -f $(OBJS) $(TARGET)
