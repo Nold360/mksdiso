@@ -39,4 +39,4 @@ uninstall:
 	rm /usr/local/bin/scramble || true
 
 clean:
-	rm -r build/
+	$(MAKE) -C src clean
