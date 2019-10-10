@@ -2,7 +2,7 @@
 CC = g++
 STRIP = strip
 WINDRES = windres
-PACKER = res/upx
+PACKER = upx
 RM = rm
 
 # flags
@@ -31,7 +31,7 @@ all : $(OBJS)
 linux : $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 	$(STRIP) $(TARGET)
-	./$(PACKER) $(PACKEROPT) $(TARGET)
+	-$(PACKER) $(PACKEROPT) $(TARGET)
 
 # Mac OSX compiling, thanks to darcagn
 osx : $(OBJS)
@@ -51,7 +51,7 @@ install: linux
 	cp $(TARGET) /usr/local/bin/
 
 clean:
-	$(RM) -f $(OBJS)
+	-$(RM) $(OBJS)
 
 clean-all: clean
-	$(RM) -f $(OBJS) $(TARGET)
+	-$(RM) $(OBJS) $(TARGET)
