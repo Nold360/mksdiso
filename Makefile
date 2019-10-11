@@ -1,7 +1,7 @@
 VERSION=$(shell gawk '/^VERSION/ {print $1}' bin/mksdiso | cut -f2 -d\")
 BUILD_DIR=build/mksdiso-$(VERSION)-all
 
-default: build
+default: compile
 
 help:
 	@echo "Usage: make <package|install|clean>"
@@ -10,10 +10,10 @@ help:
 	@echo "   clean   | cleanup object files and package build directory"
 	exit 0
 
-build:
-	cd src && $(MAKE)
+compile:
+	$(MAKE) -C src
 
-package: build
+package: compile
 	mkdir -p $(BUILD_DIR)/usr/bin $(BUILD_DIR)/usr/share/mksdiso $(BUILD_DIR)/DEBIAN
 	cp debian/control $(BUILD_DIR)/DEBIAN/
 	cp bin/* $(BUILD_DIR)/usr/bin/
@@ -23,7 +23,7 @@ package: build
 	dpkg-deb --build $(BUILD_DIR)
 
 # Local install, modifes mksdiso-data-path to /usr/local/share/mksdiso
-install: build
+install: compile
 	$(MAKE) -C src install
 	mkdir -p /usr/local/share
 	cp -r mksdiso /usr/local/share/
