@@ -9,7 +9,7 @@ RM = rm
 # add the -DDEBUG directive to CPPFLAGS to compile in DEBUG mode.
 #CPPFLAGS = -O3 -DDEBUG
 CPPFLAGS += -O3 -fPIC -Wno-narrowing
-PACKEROPT = -9 --compress-resources=0
+PACKEROPT = -qq -9 --compress-resources=0
 
 # directories
 OBJ_DIR = obj/
