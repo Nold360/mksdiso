@@ -25,8 +25,8 @@ package: build
 # Local install, modifes mksdiso-data-path to /usr/local/share/mksdiso
 install: build
 	cp -r bin/* /usr/local/bin/
-	sed -i 's/^DATADIR=.*/DATADIR=\/usr\/local\/share\/mksdiso/' /usr/local/bin/mksdiso
-	mkdir -p /usr/local/share || true
+	sed -i 's#^DATADIR=.*#DATADIR=/usr/local/share/mksdiso#' /usr/local/bin/mksdiso
+	mkdir -p /usr/local/share
 	cp -r mksdiso /usr/local/share/
 
 uninstall:
