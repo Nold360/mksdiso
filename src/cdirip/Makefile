@@ -11,16 +11,18 @@ CC=gcc
 # Parameters given to the compiler
 CFLAGS=-s -O1  -I/usr/include -I/include -lm
 # Output filename (*.exe)
-OUTPUT="cdirip"
+OUTPUT=cdirip
 
 # Source files
-SRCS="audio.c" "cdirip.c" "buffer.c" "cdi.c" "common.c"
+SRCS=audio.c cdirip.c buffer.c cdi.c common.c
 # Output object files (*.o)
-OBJS="audio.o" "cdirip.o" "buffer.o" "cdi.o" "common.o"
+OBJS=audio.o cdirip.o buffer.o cdi.o common.o
 
 # Standard targets
 
-all:
+all: $(OUTPUT)
+
+$(OUTPUT): $(SRCS)
 	$(CC) -c $(SRCS) $(CFLAGS)
 	$(CC) -o $(OUTPUT) $(OBJS) $(CFLAGS)
 
