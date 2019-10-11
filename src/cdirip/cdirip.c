@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>		/* For chdir() */
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
