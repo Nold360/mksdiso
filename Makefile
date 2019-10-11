@@ -7,7 +7,7 @@ help:
 	@echo "Usage: make <package|install|clean>"
 	@echo "   package | Build debian Package"
 	@echo "   install | install to /usr/local/bin"
-	@echo "   clean   | cleanup package build directory"
+	@echo "   clean   | cleanup object files and package build directory"
 	exit 0
 
 build:
@@ -25,6 +25,7 @@ package: build
 # Local install, modifes mksdiso-data-path to /usr/local/share/mksdiso
 install: build
 	cp -r bin/* /usr/local/bin/
+	cp -p src/scramble/scramble /usr/local/bin/
 	sed -i 's#^DATADIR=.*#DATADIR=/usr/local/share/mksdiso#' /usr/local/bin/mksdiso
 	mkdir -p /usr/local/share
 	cp -r mksdiso /usr/local/share/
@@ -38,5 +39,8 @@ uninstall:
 	rm /usr/local/bin/burncdi || true
 	rm /usr/local/bin/scramble || true
 
-clean:
+clean-package:
+	-rm -r $(BUILD_DIR)
+
+clean:	clean-package
 	$(MAKE) -C src clean
