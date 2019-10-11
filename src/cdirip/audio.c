@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include "audio.h"
+#include "common.h"		/* for fwrite_as_big() */
 
 
 
