@@ -24,11 +24,11 @@ package: build
 
 # Local install, modifes mksdiso-data-path to /usr/local/share/mksdiso
 install: build
-	cp -r bin/* /usr/local/bin/
-	cp -p src/scramble/scramble /usr/local/bin/
+	$(MAKE) -C src install
 	sed -i 's#^DATADIR=.*#DATADIR=/usr/local/share/mksdiso#' /usr/local/bin/mksdiso
 	mkdir -p /usr/local/share
 	cp -r mksdiso /usr/local/share/
+	cp -r bin/* /usr/local/bin/
 
 uninstall:
 	rm -r /usr/local/share/mksdiso || true
