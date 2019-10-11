@@ -31,11 +31,8 @@ all : $(OBJS)
 # Linux compiling (same as all)
 linux : all
 
-# Mac OSX compiling, thanks to darcagn
-osx : $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
-	$(STRIP) $(TARGET)
-
+# Mac OS compiling (same as all)
+osx : all
 
 # compile source
 $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
