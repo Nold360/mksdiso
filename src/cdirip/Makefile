@@ -20,12 +20,9 @@ OBJS="audio.o" "cdirip.o" "buffer.o" "cdi.o" "common.o"
 
 # Standard targets
 
-all: compile_res
+all:
 	$(CC) -c $(SRCS) $(CFLAGS)
 	$(CC) -o $(OUTPUT) $(OBJS) $(CFLAGS)
-
-compile_res:
-
 
 test: all
 	./$(OUTPUT)
