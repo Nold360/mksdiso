@@ -23,7 +23,9 @@ LIBS =
 OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)binhack.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
 
 # go !
-all : $(OBJS)
+all : $(TARGET)
+
+$(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 	$(STRIP) $(TARGET)
 	-$(PACKER) $(PACKEROPT) $(TARGET)
@@ -42,7 +44,8 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
 $(OBJ_DIR)%.o: $(SRC_DIR)%.rc
 	$(WINDRES) -i $< -o $@
 
-install: linux
+install: all
+	mkdir -p /usr/local/bin/
 	cp $(TARGET) /usr/local/bin/
 
 clean:
