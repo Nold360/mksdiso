@@ -36,7 +36,7 @@ function check_dependencies() {
         ISOTOOL=mkisofs
     fi
 
-    for bin in binhack32 cdirip isofix scramble 7z; do
+    for bin in binhack cdirip isofix scramble 7z; do
         if ! type $bin &>/dev/null ; then
             echo "Please install $bin or include it in \$PATH"
             exit 1
@@ -71,9 +71,9 @@ function hack_lba() { #ARGs: target-dir
         fi
     fi
     
-    # FIXME: Copy IP.BIN, Workaround for binhack32 :/
+    # FIXME: Copy IP.BIN, Workaround for binhack :/
     cp ${DATADIR}/katana/IP.BIN IP.BIN
-    echo -e -n "${1}/1ST_READ.BIN\nIP.BIN\n0\n" | binhack32
+    echo -e -n "${1}/1ST_READ.BIN\nIP.BIN\n0\n" | binhack
     rm IP.BIN
     return 0
 }
