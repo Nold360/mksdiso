@@ -31,4 +31,3 @@ rm bincon.txt > /dev/null 2>&1
 
 echo ""
 echo "DONE!"
-read -p "Press any key to continue..."
