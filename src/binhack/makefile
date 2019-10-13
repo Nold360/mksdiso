@@ -53,3 +53,6 @@ clean:
 
 clean-all: clean
 	-$(RM) $(OBJS) $(TARGET)
+
+test: all
+	cd bin; ./test_linux; ./clean_linux
