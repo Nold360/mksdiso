@@ -17,6 +17,11 @@ package: compile
 	mkdir -p $(BUILD_DIR)/usr/bin $(BUILD_DIR)/usr/share/mksdiso $(BUILD_DIR)/DEBIAN
 	cp debian/control $(BUILD_DIR)/DEBIAN/
 	cp bin/* $(BUILD_DIR)/usr/bin/
+	cp src/binhack/bin/binhack $(BUILD_DIR)/usr/bin/
+	cp src/cdirip/cdirip $(BUILD_DIR)/usr/bin/
+	cp src/isofix/isofix $(BUILD_DIR)/usr/bin/
+	cp src/makeip/makeip $(BUILD_DIR)/usr/bin/
+	cp src/scramble/scramble $(BUILD_DIR)/usr/bin/
 	cp -r mksdiso/* $(BUILD_DIR)/usr/share/mksdiso/
 	sed -i 's/^DATADIR=.*/DATADIR=\/usr\/share\/mksdiso/' $(BUILD_DIR)/usr/bin/mksdiso
 	sed -i 's/^Version:.*/Version:\ $(VERSION)/' $(BUILD_DIR)/DEBIAN/control
