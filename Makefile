@@ -23,17 +23,15 @@ package: compile
 	cp src/makeip/makeip $(BUILD_DIR)/usr/bin/
 	cp src/scramble/scramble $(BUILD_DIR)/usr/bin/
 	cp -r mksdiso/* $(BUILD_DIR)/usr/share/mksdiso/
-	sed -i 's/^DATADIR=.*/DATADIR=\/usr\/share\/mksdiso/' $(BUILD_DIR)/usr/bin/mksdiso
 	sed -i 's/^Version:.*/Version:\ $(VERSION)/' $(BUILD_DIR)/DEBIAN/control
 	dpkg-deb --build $(BUILD_DIR)
 
-# Local install, modifes mksdiso-data-path to /usr/local/share/mksdiso
+# Local sysadmin install goes to /usr/local/
 install: compile
 	$(MAKE) -C src install
 	mkdir -p /usr/local/share
 	cp -r mksdiso /usr/local/share/
 	cp -r bin/* /usr/local/bin/
-	sed -i 's#^DATADIR=.*#DATADIR=/usr/local/share/mksdiso#' /usr/local/bin/mksdiso
 
 uninstall:
 	-rm -r /usr/local/share/mksdiso
