@@ -21,14 +21,16 @@ done
 function usage() {
     cat <<EOF
 Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]
-This script convertes a "normal" Dreamcast game image into a SD-ISO-Image
-For usage with Dreamshell ISO-Loader.
+
+This script converts a "normal" Dreamcast game image into a SD-ISO-Image
+for usage with Dreamshell ISO-Loader.
 
 Parameters:
 	-h | Create ISO from Homebrew
 	-k | Create ISO from Katana Image
 
 Supported Source-Files: CDI, ISO, Directory
+
 Feel free to open issues/contribute at https://github.com/nold360/mksdiso
 EOF
 }
