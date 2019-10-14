@@ -12,7 +12,7 @@ DEL_IN_DIR=0
 
 function usage() {
     echo "Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]"
-    echo "This script convertes a "normal" Dreamcast game image into a SD-ISO-Image"
+    echo 'This script convertes a "normal" Dreamcast game image into a SD-ISO-Image'
     echo "For usage with Dreamshell ISO-Loader"
     echo
     echo "Paramaters:"
