@@ -8,6 +8,7 @@ echo "mksdiso Ver. $VERSION | By Nold 2013-2017 | Visit: https://nold.in"
 DEL_IN_DIR=0
 
 # Directory which includes the IP.BIN files included in mksdiso source git
+DATADIR=$HOME/.mksdiso
 for d in $HOME/.mksdiso {$HOME/.local,/usr/local,/usr}/share/mksdiso; do
     if [[ -d "$d" ]]; then
 	if [[ -s "$d/katana/IP.BIN" || -s "$d/homebrew/IP.BIN" ]]; then
@@ -16,8 +17,6 @@ for d in $HOME/.mksdiso {$HOME/.local,/usr/local,/usr}/share/mksdiso; do
 	fi
     fi
 done
-
-
 
 function usage() {
     cat <<EOF
