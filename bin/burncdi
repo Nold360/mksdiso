@@ -111,7 +111,7 @@ echo "---------------------------------------------------"
 echo "Starting burning process using $BURNBIN"
 
 COUNTER=0
-RET=99
+RET=-1
 MORE=true
 while $MORE ; do
     COUNTER=$(($COUNTER + 1))
@@ -126,7 +126,14 @@ while $MORE ; do
     elif [ -f $ISOFILE ]; then
         echo "Burning Part  $NUMBER: '$ISOFILE'"
         $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE
-        RET=$?
+	if [[ RET -le 0 ]]; then # No error yet?
+            RET=$?
+	    if [[ RET -gt 0 ]]; then # How now brown cow?
+		echo >&2
+		echo "ERROR: $BURNBIN returned error code $RET!" >&2
+		echo >&2
+	    fi
+	fi
     else
         MORE=false
     fi
