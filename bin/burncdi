@@ -130,7 +130,9 @@ while $MORE ; do
             RET=$?
 	    if [[ RET -gt 0 ]]; then # How now brown cow?
 		echo >&2
+		echo "!!!" >&2
 		echo "ERROR: $BURNBIN returned error code $RET!" >&2
+		echo "!!!" >&2
 		echo >&2
 	    fi
 	fi
