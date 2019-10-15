@@ -85,7 +85,7 @@ else
 if (opts.askforimage == true)
    {
    printf("\nPlease enter name of image to fix (Return to exit): ");
-   gets(string);
+   fgets(string, 256-1, stdin);
    if (strlen(string) == 0) exit(1);
    }
 
@@ -144,7 +144,7 @@ if (opts.extractbootonly == false && opts.extractheaderonly == false)
    else
       {
       printf("\nPlease enter starting LBA value: ");
-      gets(string);
+      fgets(string, 256-1, stdin);
       start_lba = atol(string);
       if (start_lba <= 0) { printf("Bad LBA value"); exit(1); }
       }

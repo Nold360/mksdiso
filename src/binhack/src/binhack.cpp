@@ -92,7 +92,7 @@ void hackBootStrap( ofstream& iphak, unsigned int bootsize, fstream& boot ) {
 
     // Now real bootstrap hacking, stuff to put in iphak!
     iphak.seekp( BOOTSECTOR_HACK_OFFSET, ios::beg );
-    iphak.write( bootsector_hack_data, BOOTSECTOR_HACK_DATA_SIZE );
+    iphak.write( (char *)bootsector_hack_data, BOOTSECTOR_HACK_DATA_SIZE );
 
 	// Writing the BOOT.BIN filesize in the IPBIN
     iphak.seekp( BOOTSECTOR_HACK_BOOTSIZE_OFFSET, ios::beg );

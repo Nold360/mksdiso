@@ -1,0 +1,113 @@
+.TH BURNCDI 1
+.SH NAME
+burncdi \- Burn a DiscJuggler CDI image directly to a CD-R.
+.
+.
+.\" ====================================================================
+.SH SYNOPSIS
+.\" ====================================================================
+.
+.SY burncdi
+.I image.cdi
+.OP \-f
+.OP \-c CDRW-DRIVE
+.I CDI-File
+.YS
+.
+.
+.\" ====================================================================
+.SH DESCRIPTION
+.\" ====================================================================
+.
+The
+.B burncdi
+program is part of the
+.I mksdiso
+free software collection of Sega Dreamcast utilities available at 
+.UR https://\:github.com/Nold360/mksdiso
+Nold360's Github
+.UE .
+.
+.P
+The
+.B burncdi
+program is a wrapper around
+.IR cdirip (1)
+and
+.IR wodim (1)
+or
+.IR cdrecord (1).
+It both converts a file from DiscJuggler CDI format and burns the
+result to a CD-R. Temporary files are automatically cleaned up.
+.
+.
+.\" ====================================================================
+.SH OPTIONS
+.\" ====================================================================
+.
+.TP
+.BI \-f
+Force burning of image & enable overburning.
+.
+.TP
+.B \-c \fICDRW-DRIVE\fR
+Specify path to CD writer if not /dev/cdrw.
+.
+.TP
+.I CDI-FIle
+A file in DiscJuggler's CDI format. Often this will be a bootable
+.I SEGA Dreamcast
+disc.
+.
+.\" ====================================================================
+.SH "USING BURNCDI"
+.\" ====================================================================
+.
+Place a blank CD-R in the drive and simply run
+.B burncdi
+with the name of your .cdi file. After a short time, you should have a
+usable disc written with proper audio and data sessions.
+.IP
+.EX
+burncdi foo.cdi
+.EE
+.
+.P
+Note that you will need to have enough free space in /tmp to hold the
+uncompressed disc image and audio files. Temporary files will be
+deleted when
+.BR burncdi
+exits.
+.
+.\" ====================================================================
+.SH BUGS
+.\" ====================================================================
+.
+None?
+.
+.\" ====================================================================
+.SH AUTHORS
+.\" ====================================================================
+.
+.B burncdi
+was written by
+.UR https://nold.in/
+Nold
+.UE .
+.
+.\" ====================================================================
+.SH "SEE ALSO"
+.\" ====================================================================
+.
+.BR cdirip (1),
+.BR wodim (1),
+.BR cdrecord (1).
+.
+.\" ====================================================================
+.\" Emacs setup
+.\" ====================================================================
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+.\" vim: set filetype=groff:

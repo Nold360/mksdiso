@@ -93,6 +93,7 @@ if [ -d ${EXT_DIR} ] ; then
     show_help "ERROR while unpacking CDI using cdirip!"
 fi
 
+unset BLOCKSIZE			# In case user set blocksize=human for du.
 if [ $(du -s ${EXT_DIR} 2> /dev/null | awk '{print $1}') -ge 700000 -a "$OVERBURN" == "" ] ; then
     echo "---------------------------------------------------"
     echo "CRITICAL_ERROR: Extracted files are too big, to fit on a CD-R..."

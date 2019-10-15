@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>		/* for strcmp */
 
 #define MAXCHUNK (2048*1024)
 

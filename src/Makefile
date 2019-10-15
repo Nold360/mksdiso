@@ -3,10 +3,10 @@
 DIRS = cdirip scramble makeip isofix binhack
 
 all:
-	for i in $(DIRS); do cd $$i; make ; cd .. || true; done
+	for i in $(DIRS); do $(MAKE) -k -C $$i; done
 
 clean:
-	for i in $(DIRS); do make -C $$i clean || true; done
+	for i in $(DIRS); do $(MAKE) -k -C $$i clean; done
 
 install:
-	for i in $(DIRS); do make -C $$i install || true; done
+	for i in $(DIRS); do $(MAKE) -k -C $$i install; done

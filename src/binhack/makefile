@@ -2,14 +2,14 @@
 CC = g++
 STRIP = strip
 WINDRES = windres
-PACKER = res/upx
+PACKER = upx
 RM = rm
 
 # flags
 # add the -DDEBUG directive to CPPFLAGS to compile in DEBUG mode.
 #CPPFLAGS = -O3 -DDEBUG
-CPPFLAGS = -O3 -fPIC
-PACKEROPT = -9 --compress-resources=0
+CPPFLAGS += -O3 -fPIC
+PACKEROPT = -qq -9 --compress-resources=0
 
 # directories
 OBJ_DIR = obj/
@@ -17,27 +17,24 @@ SRC_DIR = src/
 BIN_DIR = bin/
 
 # files
-BIN = binhack32
+BIN = binhack
 TARGET = $(BIN_DIR)$(BIN)$(OS:Windows_NT=.exe)
 LIBS =
 OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)binhack.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
 
 # go !
-all : $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
-	$(STRIP) $(TARGET)
-	$(PACKER) $(PACKEROPT) $(TARGET)
-# Linux compiling
-linux : $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
-	$(STRIP) $(TARGET)
-	./$(PACKER) $(PACKEROPT) $(TARGET)
+all : $(TARGET)
 
-# Mac OSX compiling, thanks to darcagn
-osx : $(OBJS)
+$(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 	$(STRIP) $(TARGET)
+	-$(PACKER) $(PACKEROPT) $(TARGET)
 
+# Linux compiling (same as all)
+linux : all
+
+# Mac OS compiling (same as all)
+osx : all
 
 # compile source
 $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
@@ -47,11 +44,15 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
 $(OBJ_DIR)%.o: $(SRC_DIR)%.rc
 	$(WINDRES) -i $< -o $@
 
-install: linux
-	cp bin/binhack32 bin/binhack64 /usr/local/bin/
+install: all
+	mkdir -p /usr/local/bin/
+	cp $(TARGET) /usr/local/bin/
 
 clean:
-	$(RM) $(OBJS)
+	-$(RM) $(OBJS)
 
-clean-all:
-	$(RM) $(OBJS) $(TARGET)
+clean-all: clean
+	-$(RM) $(OBJS) $(TARGET)
+
+test: all
+	cd bin; ./test_linux; ./clean_linux
