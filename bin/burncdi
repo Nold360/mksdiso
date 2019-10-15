@@ -149,7 +149,7 @@ if [ $RET -eq 0 ] ; then
     echo "---------------------------------------------------"
 else
     echo "---------------------------------------------------"
-    echo "An error accured! Check $BURNBIN output"
+    echo "An error occurred! Check $BURNBIN output"
     echo "---------------------------------------------------"
     echo
 fi
