@@ -121,35 +121,35 @@ echo "---------------------------------------------------"
 echo "Starting burning process using $BURNBIN"
 
 COUNTER=0
-RET=-1
-MORE=true
-while $MORE ; do
+RET=0
+while true ; do
     COUNTER=$(($COUNTER + 1))
     NUMBER=$(printf %02u $COUNTER)
     ISOFILE=${EXT_DIR}/tdata${NUMBER}.iso
     WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
 
     echo "---------------------------------------------------"
+    COMMAND="$BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY}"
+
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
-        $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY} \
-		 -tao -multi -audio $WAVFILE
+        COMMAND+="-tao -multi -audio $WAVFILE"
     elif [ -f $ISOFILE ]; then
-        echo "Burning Part  $NUMBER: '$ISOFILE'"
-        $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY} \
-		 -tao -multi -xa $ISOFILE
-	if [[ RET -le 0 ]]; then # No error yet?
-            RET=$?
-	    if [[ RET -gt 0 ]]; then # How now brown cow?
-		echo >&2
-		echo "!!!" >&2
-		echo "ERROR: $BURNBIN returned error code $RET!" >&2
-		echo "!!!" >&2
-		echo >&2
-	    fi
-	fi
+        echo "Burning Part $NUMBER: '$ISOFILE'"
+        COMMAND+="-tao -multi -xa $ISOFILE"
     else
-        MORE=false
+	break			# Exit infinite loop
+    fi
+
+    if ! $COMMAND; then
+	RET=1			 # Bad burn
+	cat >&2 <<-EOF
+
+		!!!
+		ERROR running $COMMAND
+		!!!
+
+	EOF
     fi
 done
 
