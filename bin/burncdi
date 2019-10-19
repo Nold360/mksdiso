@@ -130,7 +130,7 @@ while $MORE ; do
         $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} -tao -multi -audio $WAVFILE
     elif [ -f $ISOFILE ]; then
         echo "Burning Part  $NUMBER: '$ISOFILE'"
-        $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} -dao -multi -xa $ISOFILE
+        $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} -tao -multi -xa $ISOFILE
 	if [[ RET -le 0 ]]; then # No error yet?
             RET=$?
 	    if [[ RET -gt 0 ]]; then # How now brown cow?
