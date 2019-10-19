@@ -68,7 +68,7 @@ OVERBURN=""
 SPEED=""
 NOTREALLY=""
 DEVICE=""
-VERBOSE=":"
+VECHO=":"; VFLAG=""
 while getopts "fc:s:nv" opt; do
     case $opt in
         c)
@@ -88,7 +88,8 @@ while getopts "fc:s:nv" opt; do
             NOTREALLY="-dummy"
 	    ;;
         v)
-            VERBOSE="echo"
+            VECHO="echo"
+            VFLAG="-v"
 	    ;;
         :)
             show_help "-$opt requires argument."
@@ -137,7 +138,7 @@ while true ; do
     WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
 
     echo "---------------------------------------------------"
-    COMMAND="$BURNBIN ${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY} "
+    COMMAND="$BURNBIN ${VFLAG} ${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY} "
 
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
@@ -145,12 +146,18 @@ while true ; do
     elif [ -f $ISOFILE ]; then
         echo "Burning Part $NUMBER: '$ISOFILE'"
         COMMAND+=" -tao -multi -xa"
+
+#	# Raw burning requires the tracksize to be specified.
+#	tsize=$(genisoimage -R -q -print-size $ISOFILE)
+#	COMMAND+=" -tsize=${tsize}s"
+#	COMMAND+=" $ISOFILE"
+
     else
 	echo "No more parts" 
 	break			# Exit infinite loop
     fi
 
-    $VERBOSE $COMMAND
+    $VECHO $COMMAND
     if ! $COMMAND; then
 	RET=1			# Bad burn
 	cat >&2 <<-EOF
