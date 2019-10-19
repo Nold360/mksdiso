@@ -53,7 +53,8 @@ function show_help {
     echo "       -f         | Force burning of Image & enable overburning"
     echo "       -c <DRIVE> | Path to CD writer (default is autodetect)"
     echo "       -s <SPEED> | Speed to burn at (defaults to full speed)"
-    echo "       -n         | Not really; just perform a dummy write "
+    echo "       -n         | Not really; just perform a dummy write"
+    echo "       -v         | Verbose: show commands before running them"
     exit 1
 }
 
@@ -67,7 +68,8 @@ OVERBURN=""
 SPEED=""
 NOTREALLY=""
 DEVICE=""
-while getopts "fc:s:n" opt; do
+VERBOSE=":"
+while getopts "fc:s:nv" opt; do
     case $opt in
         c)
             DEVICE="dev=$OPTARG"
@@ -84,6 +86,9 @@ while getopts "fc:s:n" opt; do
 	    ;;
         n)
             NOTREALLY="-dummy"
+	    ;;
+        v)
+            VERBOSE="echo"
 	    ;;
         :)
             show_help "-$opt requires argument."
@@ -136,14 +141,16 @@ while true ; do
 
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
-        COMMAND+="-tao -multi -audio $WAVFILE"
+        COMMAND+=" -tao -multi -audio $WAVFILE"
     elif [ -f $ISOFILE ]; then
         echo "Burning Part $NUMBER: '$ISOFILE'"
-        COMMAND+="-tao -multi -xa $ISOFILE"
+        COMMAND+=" -tao -multi -xa"
     else
+	echo "No more parts" 
 	break			# Exit infinite loop
     fi
 
+    $VERBOSE $COMMAND
     if ! $COMMAND; then
 	RET=1			# Bad burn
 	cat >&2 <<-EOF
@@ -153,7 +160,7 @@ while true ; do
 		!!!
 
 	EOF
-	read -p "Continue burning anyway? [Y/n] " -n 1
+	read  -p "Continue burning anyway? [Y/n] " -n 1 -s
 	case "$REPLY" in
 	    N|n) echo "Quitting."
 		 break
