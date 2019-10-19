@@ -145,7 +145,7 @@ while true ; do
     fi
 
     if ! $COMMAND; then
-	RET=1			 # Bad burn
+	RET=1			# Bad burn
 	cat >&2 <<-EOF
 
 		!!!
@@ -153,6 +153,15 @@ while true ; do
 		!!!
 
 	EOF
+	read -p "Continue burning anyway? [Y/n] " -n 1
+	case "$REPLY" in
+	    N|n) echo "Quitting."
+		 break
+		 ;;
+	    *)   echo "Continuing..."
+		 continue
+		 ;;
+	esac
     fi
 done
 
