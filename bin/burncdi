@@ -145,13 +145,7 @@ while true ; do
         COMMAND+=" -tao -multi -audio $WAVFILE"
     elif [ -f $ISOFILE ]; then
         echo "Burning Part $NUMBER: '$ISOFILE'"
-        COMMAND+=" -tao -multi -xa"
-
-#	# Raw burning requires the tracksize to be specified.
-#	tsize=$(genisoimage -R -q -print-size $ISOFILE)
-#	COMMAND+=" -tsize=${tsize}s"
-	COMMAND+=" $ISOFILE"
-
+        COMMAND+=" -tao -multi -xa $ISOFILE"
     else
 	echo "No more parts" 
 	break			# Exit infinite loop
