@@ -51,7 +51,7 @@ function show_help {
     echo "       $0 [-f] [-c <DRIVE>] [-s <SPEED>]  <CDI-File>"
     echo
     echo "       -f         | Force burning of Image & enable overburning"
-    echo "       -c <DRIVE> | Path to CD writer if not /dev/cdrw"
+    echo "       -c <DRIVE> | Path to CD writer (default is autodetect)"
     echo "       -s <SPEED> | Speed to burn at (defaults to full speed)"
     echo "       -n         | Not really; just perform a dummy write "
     exit 1
@@ -66,12 +66,15 @@ function cleanup {
 OVERBURN=""
 SPEED=""
 NOTREALLY=""
-DEVICE="/dev/cdrw"
+DEVICE=""
 while getopts "fc:s:n" opt; do
     case $opt in
         c)
-            DEVICE="$OPTARG"
-            [ ! -e $DEVICE ] && show_help "Device '$DEVICE' does not exist"
+            DEVICE="dev=$OPTARG"
+            if [ ! -e $OPTARG ]; then
+		show_help "Device '$OPTARG' does not exist"
+		exit 1
+	    fi
             ;;
         f)
             OVERBURN="-overburn"
@@ -129,7 +132,7 @@ while true ; do
     WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
 
     echo "---------------------------------------------------"
-    COMMAND="$BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY}"
+    COMMAND="$BURNBIN ${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY} "
 
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
@@ -161,7 +164,7 @@ cleanup
 echo "Done"
 
 echo -n "Ejecting Disk... "
-eject $DEVICE &>/dev/null
+eject ${DEVICE#dev=} &>/dev/null
 echo "Done"
 
 if [ $RET -eq 0 ] ; then
