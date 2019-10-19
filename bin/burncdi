@@ -150,7 +150,7 @@ while true ; do
 #	# Raw burning requires the tracksize to be specified.
 #	tsize=$(genisoimage -R -q -print-size $ISOFILE)
 #	COMMAND+=" -tsize=${tsize}s"
-#	COMMAND+=" $ISOFILE"
+	COMMAND+=" $ISOFILE"
 
     else
 	echo "No more parts" 
