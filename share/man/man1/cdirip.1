@@ -1,0 +1,188 @@
+.TH CDIRIP 1
+.SH NAME
+cdirip \- Convert a DiscJuggler CDI format to ISO, WAV, and CUE files
+.
+.
+.
+.\" ====================================================================
+.\" Definitions
+.\" ====================================================================
+.
+.\" ====================================================================
+.\" 'char or string'
+.de Quoted
+.  ft CR
+\[oq]\\$*\[cq]
+.  ft
+..
+.
+.\" ====================================================================
+.SH SYNOPSIS
+.\" ====================================================================
+.
+.SY cdirip
+.I image.cdi
+.RI [ path ]
+.RI [ 
+.OP \-iso
+.OP \-bin
+.OP \-raw
+.OP \-info
+.OP \-cut
+.OP \-cutall
+.OP \-full
+.OP \-swap
+.OP \-speed
+.OP \-pregap
+.OP \-cdrecord
+.OP \-winoncd
+.OP \-fireburner
+.RI ]
+.YS
+.
+.
+.\" ====================================================================
+.SH DESCRIPTION
+.\" ====================================================================
+.
+The
+.B cdirip
+program is part of the
+.I mksdiso
+free software collection of Sega Dreamcast utilities available at 
+.UR https://\:github.com/Nold360/mksdiso
+Nold360's Github
+.UE .
+.
+.P
+The
+.B cdirip
+program is used to convert a file in DiscJuggler CDI format, which
+Dreamcast CD-ROMs are commonly encoded as, into three more standard
+formats:
+.IR .iso ,
+.IR .wav ,
+and
+.IR .cue .
+Once a user has those files on a UNIX system, a CD-ROM or SD card can
+be easily created using
+.IR wodim (1)
+or
+.IR cdrecord (1).
+.
+.
+.\" ====================================================================
+.SH OPTIONS
+.\" ====================================================================
+.
+The command line parsing is rather unusual.
+.
+The first argument
+.I must
+be the name of the .cdi file. If a path to extract files into is
+specified, then it
+.I must
+be the second argument. Any other options follow after that.
+.
+.TP
+.B \-info
+Show info about the .cdi image. 
+.
+.TP
+.B \-raw
+Extract raw audio instead of .wav format.
+.
+.
+.TP
+.B \-aiff
+.TQ
+.B \-cda
+.I (No longer implemented?)
+Extract audio in AIFF or CD Digital Audio formats.
+.
+.TP
+.B \-swap
+Use LSB endianness for audio. (MSB by default). 
+.
+.TP
+.B \-pregap
+Pregap data will be saved.
+.
+.TP
+.B \-iso
+.TQ
+.B \-bin 
+Output to either .iso or .bin format. Unix systems default to .iso, Microsoft
+Windows defaults to .bin.
+.
+.TP
+.B \-cut
+.TQ
+.B \-cutall
+.TQ
+.B \-full
+.I I am not sure what these do. Something with cutting tracks?
+.I I think -cut cuts only the first track.
+.
+.\" ====================================================================
+.SH "USING CDIRIP"
+.\" ====================================================================
+.
+.B cdirip
+can be used alone to simply extract files or in the shell script
+.BI burncdi (1)
+which will burn them to a CD-R.
+.
+.
+.\" ====================================================================
+.SH EXAMPLES
+.\" ====================================================================
+.
+.P
+To process a .cdi file to extract files
+.
+.IP
+.EX
+cdirip foo.cdi
+wodim -tao -multi -audio taudio01.wav
+wodim -tao -multi -xa tdata02.iso
+.EE
+.
+.P
+Note that the files extracted can differ. Using the
+.BR burncdi (1)
+script is recommended to handle this properly.
+.
+.
+.\" ====================================================================
+.SH BUGS
+.\" ====================================================================
+.
+Source code implements -aiff and -cda flags, but they are not parsed
+by the command line. Why not? Were they buggy?
+.
+.
+.\" ====================================================================
+.SH AUTHORS
+.\" ====================================================================
+.
+.B cdirip
+was written by
+.UR https://nold.in/
+Nold
+.UE .
+.
+.\" ====================================================================
+.SH "SEE ALSO"
+.\" ====================================================================
+.
+.BR burncdi (1).
+.
+.\" ====================================================================
+.\" Emacs setup
+.\" ====================================================================
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+.\" vim: set filetype=groff:
