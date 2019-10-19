@@ -48,10 +48,11 @@ function show_help {
     fi
     echo "BurnCDI - Script to burn CDI-Images to disk using Linux"
     echo "Usage:"
-    echo "       $0 [-f] [-c <CDRW-DRIVE>] <CDI-File>"
+    echo "       $0 [-f] [-c <DRIVE>] [-s <SPEED>]  <CDI-File>"
     echo
     echo "       -f | Force burning of Image & enable overburning"
-    echo "       -c | Path to CD writer if not /dev/cdrw"
+    echo "       -c <DRIVE> | Path to CD writer if not /dev/cdrw"
+    echo "       -s <SPEED> | Speed to burn at (defaults to full speed)"
     exit 1
 }
 
@@ -62,8 +63,9 @@ function cleanup {
 }
 
 OVERBURN=""
+SPEED=""
 DEVICE="/dev/cdrw"
-while getopts "fc:" opt; do
+while getopts "fc:s:" opt; do
     case $opt in
         c)
             DEVICE="$OPTARG"
@@ -72,6 +74,9 @@ while getopts "fc:" opt; do
         f)
             OVERBURN="-overburn"
             ;;
+        s)
+            SPEED="-speed $OPTARG"
+	    ;;
         :)
             show_help "-$opt requires argument."
             ;;
@@ -122,10 +127,10 @@ while $MORE ; do
     echo "---------------------------------------------------"
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
-        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE
+        $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} -tao -multi -audio $WAVFILE
     elif [ -f $ISOFILE ]; then
         echo "Burning Part  $NUMBER: '$ISOFILE'"
-        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE
+        $BURNBIN dev=${DEVICE} ${SPEED} ${OVERBURN} -dao -multi -xa $ISOFILE
 	if [[ RET -le 0 ]]; then # No error yet?
             RET=$?
 	    if [[ RET -gt 0 ]]; then # How now brown cow?
