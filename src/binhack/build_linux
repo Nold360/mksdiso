@@ -1,5 +1,3 @@
-#!/bin/bash
+#!/bin/bash -x
 
-make linux
-
-read -p "Press any key to continue..."
+make

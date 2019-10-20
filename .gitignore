@@ -1,1 +1,4 @@
-build
+src/binhack/bin/binhack
+src/cdirip/cdirip
+src/isofix/isofix
+src/scramble/scramble

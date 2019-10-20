@@ -48,10 +48,13 @@ function show_help {
     fi
     echo "BurnCDI - Script to burn CDI-Images to disk using Linux"
     echo "Usage:"
-    echo "       $0 [-f] [-c <CDRW-DRIVE>] <CDI-File>"
+    echo "       $0 [-f] [-c <DRIVE>] [-s <SPEED>]  <CDI-File>"
     echo
-    echo "       -f | Force burning of Image & enable overburning"
-    echo "       -c | Path to CD writer if not /dev/cdrw"
+    echo "       -f         | Force burning of Image & enable overburning"
+    echo "       -c <DRIVE> | Path to CD writer (default is autodetect)"
+    echo "       -s <SPEED> | Speed to burn at (defaults to full speed)"
+    echo "       -n         | Not really; just perform a dummy write"
+    echo "       -v         | Verbose: show commands before running them"
     exit 1
 }
 
@@ -62,16 +65,32 @@ function cleanup {
 }
 
 OVERBURN=""
-DEVICE="/dev/cdrw"
-while getopts "fc:" opt; do
+SPEED=""
+NOTREALLY=""
+DEVICE=""
+VECHO=":"; VFLAG=""
+while getopts "fc:s:nv" opt; do
     case $opt in
         c)
-            DEVICE="$OPTARG"
-            [ ! -e $DEVICE ] && show_help "Device '$DEVICE' does not exist"
+            DEVICE="dev=$OPTARG"
+            if [ ! -e $OPTARG ]; then
+		show_help "Device '$OPTARG' does not exist"
+		exit 1
+	    fi
             ;;
         f)
             OVERBURN="-overburn"
             ;;
+        s)
+            SPEED="-speed $OPTARG"
+	    ;;
+        n)
+            NOTREALLY="-dummy"
+	    ;;
+        v)
+            VECHO="echo"
+            VFLAG="-v"
+	    ;;
         :)
             show_help "-$opt requires argument."
             ;;
@@ -93,6 +112,7 @@ if [ -d ${EXT_DIR} ] ; then
     show_help "ERROR while unpacking CDI using cdirip!"
 fi
 
+unset BLOCKSIZE			# In case user set blocksize=human for du.
 if [ $(du -s ${EXT_DIR} 2> /dev/null | awk '{print $1}') -ge 700000 -a "$OVERBURN" == "" ] ; then
     echo "---------------------------------------------------"
     echo "CRITICAL_ERROR: Extracted files are too big, to fit on a CD-R..."
@@ -110,24 +130,46 @@ echo "---------------------------------------------------"
 echo "Starting burning process using $BURNBIN"
 
 COUNTER=0
-RET=99
-MORE=true
-while $MORE ; do
+RET=0
+while true ; do
     COUNTER=$(($COUNTER + 1))
     NUMBER=$(printf %02u $COUNTER)
     ISOFILE=${EXT_DIR}/tdata${NUMBER}.iso
     WAVFILE=${EXT_DIR}/taudio${NUMBER}.wav
 
     echo "---------------------------------------------------"
+    COMMAND="$BURNBIN ${VFLAG} ${DEVICE} ${SPEED} ${OVERBURN} ${NOTREALLY} "
+
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
-        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE
+        COMMAND+=" -tao -multi -audio $WAVFILE"
     elif [ -f $ISOFILE ]; then
-        echo "Burning Part  $NUMBER: '$ISOFILE'"
-        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE
-        RET=$?
+        echo "Burning Part $NUMBER: '$ISOFILE'"
+        COMMAND+=" -tao -multi -xa $ISOFILE"
     else
-        MORE=false
+	echo "No more parts" 
+	break			# Exit infinite loop
+    fi
+
+    $VECHO $COMMAND
+    if ! $COMMAND; then
+	RET=1			# Bad burn
+	cat >&2 <<-EOF
+
+		!!!
+		ERROR running $COMMAND
+		!!!
+
+	EOF
+	read  -p "Continue burning anyway? [Y/n] " -n 1 -s
+	case "$REPLY" in
+	    N|n) echo "Quitting."
+		 break
+		 ;;
+	    *)   echo "Continuing..."
+		 continue
+		 ;;
+	esac
     fi
 done
 
@@ -139,7 +181,7 @@ cleanup
 echo "Done"
 
 echo -n "Ejecting Disk... "
-eject $DEVICE &>/dev/null
+eject ${DEVICE#dev=} &>/dev/null
 echo "Done"
 
 if [ $RET -eq 0 ] ; then
@@ -148,7 +190,7 @@ if [ $RET -eq 0 ] ; then
     echo "---------------------------------------------------"
 else
     echo "---------------------------------------------------"
-    echo "An error accured! Check $BURNBIN output"
+    echo "An error occurred! Check $BURNBIN output"
     echo "---------------------------------------------------"
     echo
 fi

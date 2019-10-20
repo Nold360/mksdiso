@@ -27,7 +27,7 @@ unsigned long track_mode;
     fread(&filename_length, 1, 1, fsource);
     fseek(fsource, filename_length, SEEK_CUR);
     fseek(fsource, 19, SEEK_CUR);
-    fread_as_little(&temp_value, 4, fsource);
+    fread(&temp_value, 4, 1, fsource);
        if (temp_value == 0x80000000)
           fseek(fsource, 8, SEEK_CUR); // DJ4
     fseek(fsource, 16, SEEK_CUR);
@@ -46,7 +46,7 @@ void CDI_read_track (FILE *fsource, image_s *image, track_s *track)
      char TRACK_START_MARK[10] = { 0, 0, 0x01, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF };
      char current_start_mark[10];
 
-         fread_as_little(&temp_value, 4, fsource);
+         fread(&temp_value, 4, 1, fsource);
          if (temp_value != 0)
             fseek(fsource, 8, SEEK_CUR); // extra data (DJ 3.00.780 and up)
 

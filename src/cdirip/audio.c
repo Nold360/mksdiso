@@ -58,24 +58,23 @@ unsigned long  aBlockSize = 0;
 
       fwrite("FORM", 4, 1, fdest);
 
-      fwrite_as_big(&total_length, 4, fdest);
+      fwrite(&total_length, 4, 1, fdest);
 
       fwrite("AIFF", 4, 1, fdest);
       fwrite("COMM", 4, 1, fdest);
 
-      fwrite_as_big(&aCommSize, 4, fdest);
-      fwrite_as_big(&aCommSize, 4, fdest);
-      fwrite_as_big(&aChannels, 2, fdest);
-      fwrite_as_big(&aNumFrames, 4, fdest);
-      fwrite_as_big(&aBitsPerSample, 2, fdest);
+      fwrite(&aCommSize, 4, 1, fdest);
+      fwrite(&aChannels, 2, 1, fdest);
+      fwrite(&aNumFrames, 4, 1, fdest);
+      fwrite(&aBitsPerSample, 2, 1, fdest);
 
       write_ieee_extended(fdest, (double)aSampleRate);
 
       fwrite("SSND", 4, 1, fdest);
 
-      fwrite_as_big(&aSsndSize, 4, fdest);
-      fwrite_as_big(&aOffset, 4, fdest);
-      fwrite_as_big(&aBlockSize, 4, fdest);
+      fwrite(&aSsndSize, 4, 1, fdest);
+      fwrite(&aOffset, 4, 1, fdest);
+      fwrite(&aBlockSize, 4, 1, fdest);
 }
 
 

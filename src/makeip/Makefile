@@ -1,4 +1,4 @@
-default:
+makeip: makeip.c
 	gcc -o makeip makeip.c
 
 install:

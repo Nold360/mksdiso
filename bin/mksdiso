@@ -4,23 +4,35 @@ IFS=$'\n'
 VERSION="0.9.2"
 echo "mksdiso Ver. $VERSION | By Nold 2013-2017 | Visit: https://nold.in"
 
-# Directory which includes the IP.BIN files included in mksdiso source git
-DATADIR=$HOME/.mksdiso
-
 # Set save defaults
 DEL_IN_DIR=0
 
+# Directory which includes the IP.BIN files included in mksdiso source git
+DATADIR=$HOME/.mksdiso
+for d in $HOME/.mksdiso {$HOME/.local,/usr/local,/usr}/share/mksdiso; do
+    if [[ -d "$d" ]]; then
+	if [[ -s "$d/katana/IP.BIN" || -s "$d/homebrew/IP.BIN" ]]; then
+	    DATADIR="$d"
+	    break
+	fi
+    fi
+done
+
 function usage() {
-    echo "Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]"
-    echo "This script convertes a "normal" Dreamcast game image into a SD-ISO-Image"
-    echo "For usage with Dreamshell ISO-Loader"
-    echo
-    echo "Paramaters:"
-    echo -e "\t-h | Create ISO from Homebrew"
-    echo -e "\t-k | Create ISO from Katana Image\n"
-    echo
-    echo "Supported Source-Files: CDI, ISO, Directory"
-    echo "Feel free to open issues/contribute at https://github.com/nold360/mksdiso"
+    cat <<EOF
+Usage: $(basename $0) < -h | -k > <INPUT-DIR/-ISO/-CDI> [OUTPUT-DIR/-ISO]
+
+This script converts a "normal" Dreamcast game image into a SD-ISO-Image
+for usage with Dreamshell ISO-Loader.
+
+Parameters:
+	-h | Create ISO from Homebrew
+	-k | Create ISO from Katana Image
+
+Supported Source-Files: CDI, ISO, Directory
+
+Feel free to open issues/contribute at https://github.com/nold360/mksdiso
+EOF
 }
 
 # Check for needed binaries
@@ -36,7 +48,7 @@ function check_dependencies() {
         ISOTOOL=mkisofs
     fi
 
-    for bin in binhack32 cdirip isofix scramble 7z; do
+    for bin in binhack cdirip isofix scramble 7z; do
         if ! type $bin &>/dev/null ; then
             echo "Please install $bin or include it in \$PATH"
             exit 1
@@ -71,9 +83,9 @@ function hack_lba() { #ARGs: target-dir
         fi
     fi
     
-    # FIXME: Copy IP.BIN, Workaround for binhack32 :/
+    # FIXME: Copy IP.BIN, Workaround for binhack :/
     cp ${DATADIR}/katana/IP.BIN IP.BIN
-    echo -e -n "${1}/1ST_READ.BIN\nIP.BIN\n0\n" | binhack32
+    echo -e -n "${1}/1ST_READ.BIN\nIP.BIN\n0\n" | binhack
     rm IP.BIN
     return 0
 }

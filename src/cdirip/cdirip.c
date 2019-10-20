@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
+#include <unistd.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
@@ -48,13 +49,17 @@ track.position               = 0;
 
 // Opciones
 
-printf("CDIrip 0.6.X - (C) 2001 by DeXT\nHacked Version 0.6.2 for Linux by Nold 2012\n\n");
+printf("CDIrip 0.6.4 - (C) 2001,2004 by DeXT/Lawrence Williams, 2012 Nold\n\n");
 
 flags.ask_for_image = true;
 flags.ask_for_dest_path = true;
 
+opts.audio = WAV_FORMAT;
+
 #ifndef _WIN32
 opts.convert = ISO_FORMAT;  // Linux only!
+#else
+opts.convert = DEFAULT_FORMAT;
 #endif
 
 if (argc >= 2)
@@ -69,7 +74,11 @@ if (argc >= 2)
       {
       if (!strcasecmp(argv[i]+1,"iso"    )) opts.convert   = ISO_FORMAT;
       if (!strcasecmp(argv[i]+1,"bin"    )) opts.convert   = BIN_FORMAT;
-      if (!strcasecmp(argv[i]+1,"raw"    )) opts.rawaudio  = true;
+      if (!strcasecmp(argv[i]+1,"mac"    )) opts.convert   = MAC_FORMAT; // ISO/2056
+      if (!strcasecmp(argv[i]+1,"raw"    )) opts.audio     = RAW_FORMAT;
+      if (!strcasecmp(argv[i]+1,"cda"    )) opts.audio     = CDA_FORMAT;
+      if (!strcasecmp(argv[i]+1,"wav"    )) opts.audio     = WAV_FORMAT;
+      if (!strcasecmp(argv[i]+1,"aiff"   )) opts.audio     = AIFF_FORMAT;
       if (!strcasecmp(argv[i]+1,"info"   )) opts.showinfo  = true;
       if (!strcasecmp(argv[i]+1,"cut"    )) opts.cutfirst  = true;
       if (!strcasecmp(argv[i]+1,"cutall" )) opts.cutall    = true;
@@ -79,7 +88,7 @@ if (argc >= 2)
       if (!strcasecmp(argv[i]+1,"pregap" )) opts.pregap    = true;
 
       if (!strcasecmp(argv[i]+1,"cdrecord"  )) { opts.cutall = true; opts.convert = ISO_FORMAT; }
-      if (!strcasecmp(argv[i]+1,"winoncd"   )) { opts.cutall = true; opts.convert = ISO_FORMAT; opts.rawaudio = true; }
+      if (!strcasecmp(argv[i]+1,"winoncd"   )) { opts.cutall = true; opts.convert = ISO_FORMAT; opts.audio = RAW_FORMAT; }
       if (!strcasecmp(argv[i]+1,"fireburner")) { opts.cutall = true; opts.convert = BIN_FORMAT; }
       }
      else if (i == 1) flags.ask_for_image = false;
@@ -128,15 +137,13 @@ printf("Found image file. Opening...\n");
 CDI_init (fsource, &image, filename);
 
 if (image.version == CDI_V2)
-   printf("This is a v2 image\n");
+   printf("This is a v2.0 image\n");
 else if (image.version == CDI_V3)
-   printf("This is a v3 image\n");
+   printf("This is a v3.0 image\n");
 else if (image.version == CDI_V35)
    printf("This is a v3.5 image\n");
-else {
-	printf("\nVER: %x\n", image.version);
-	error_exit(ERR_GENERIC, "Unsupported image version");
-}
+else
+   error_exit(ERR_GENERIC, "Unsupported image version");
 
 // Cambiar directorio de destino
 
@@ -169,10 +176,10 @@ if (!opts.showinfo)
       }
 #endif
    }
-   
+
 // Sets proper audio format
 
-switch (opts.rawaudio)
+switch (opts.audio)
        {
        case AIFF_FORMAT:
        case CDA_FORMAT:
@@ -235,7 +242,7 @@ while(image.remaining_sessions > 0)
           {
           if (ask_type(fsource, image.header_position) == 2)
              {
-             if (opts.convert == ISO_FORMAT)
+             if (opts.convert == ISO_FORMAT || opts.convert == MAC_FORMAT)
                 flags.create_cuesheet = false;  // Si "/iso" y Modo2 -> no cuesheet
              else
                 {
@@ -292,7 +299,7 @@ while(image.remaining_sessions > 0)
                case 0 : printf("Audio/"); break;
                case 1 : printf("Mode1/"); break;
                case 2 :
-               default: printf("Mode2/");
+               default: printf("Mode2/"); break;
                }
          printf("%d  ",track.sector_size);
          if (opts.pregap)
@@ -316,7 +323,7 @@ while(image.remaining_sessions > 0)
          else if (!(track.mode != 0 && opts.fulldata))
             {
             flags.do_cut = ((opts.cutall) ? 2 : 0) +
-                          ((opts.cutfirst && track.global_current_track == 1) ? 2 : 0);
+                           ((opts.cutfirst && track.global_current_track == 1) ? 2 : 0);
             }
          else flags.do_cut = 0;
 
@@ -328,6 +335,7 @@ while(image.remaining_sessions > 0)
                    {
                    case BIN_FORMAT: flags.do_convert = false; break;
                    case ISO_FORMAT: flags.do_convert = true; break;
+                   case MAC_FORMAT: flags.do_convert = true; break;
                    case DEFAULT_FORMAT:
                    default: if (track.mode == 1)
                                flags.do_convert = true;          // Modo1/2352 -> ISO
@@ -336,6 +344,7 @@ while(image.remaining_sessions > 0)
                                   flags.do_convert = true;       // Modo2 2ª sesion -> ISO
                                else
                                   flags.do_convert = false;      // Modo2 1ª sesion -> BIN (obsoleto)
+                            break;
                    }
          else
             flags.do_convert = false;
@@ -435,7 +444,7 @@ struct buffer_s write_buffer;
 
      if (track->mode == 0)
         {
-        switch (opts->rawaudio)
+        switch (opts->audio)
                {
                case RAW_FORMAT:
                     sprintf(filename,STR_TAUDIO_RAW_FILENAME,track->global_current_track);
@@ -521,7 +530,7 @@ struct buffer_s write_buffer;
      }
 
      if (track->mode == 0)
-        switch (opts->rawaudio)
+        switch (opts->audio)
                {
                case WAV_FORMAT:
                     writewavheader(fdest, track_length);
@@ -638,32 +647,32 @@ char audio_file_ext[5];
      else
         strcpy(track_format_string,"BINARY");
 
-     switch (opts->rawaudio)
+     switch (opts->audio)
             {
             case AIFF_FORMAT:
-                 strcpy(audio_file_ext,"AIFF");
+                 strcpy(audio_file_ext,"aiff");
                  break;
             case CDA_FORMAT:
-                 strcpy(audio_file_ext,"CDA");
+                 strcpy(audio_file_ext,"cda");
                  break;
             case RAW_FORMAT:
-                 strcpy(audio_file_ext,"RAW");
+                 strcpy(audio_file_ext,"raw");
                  break;
             case WAV_FORMAT:
             default:
-                 strcpy(audio_file_ext,"WAV");
+                 strcpy(audio_file_ext,"wav");
                  break;
             }
 
      if (track->mode == 0)
         {
-        if (opts->rawaudio == WAV_FORMAT)
-              fprintf(fcuesheet, "FILE TAUDIO%02d.WAV WAVE\r\n"
+        if (opts->audio == WAV_FORMAT)
+              fprintf(fcuesheet, "FILE taudio%02d.wav WAVE\r\n"
                                  "  TRACK %02d AUDIO\r\n",
                                  track->global_current_track,
                                  track->number);
         else
-              fprintf(fcuesheet, "FILE TAUDIO%02d.%s %s\r\n"
+              fprintf(fcuesheet, "FILE taudio%02d.%s %s\r\n"
                                  "  TRACK %02d AUDIO\r\n",
                                  track->global_current_track,
                                  audio_file_ext,
@@ -677,13 +686,13 @@ char audio_file_ext[5];
      else
         {
         if (flags->save_as_iso)
-              fprintf(fcuesheet, "FILE TDATA%02d.ISO BINARY\r\n"
+              fprintf(fcuesheet, "FILE tdata%02d.iso BINARY\r\n"
                                  "  TRACK %02d MODE%d/2048\r\n",
                                  track->global_current_track,
                                  track->number,
                                  track->mode);
         else
-              fprintf(fcuesheet, "FILE TDATA%02d.BIN BINARY\r\n"
+              fprintf(fcuesheet, "FILE tdata%02d.bin BINARY\r\n"
                                  "  TRACK %02d MODE%d/%d\r\n",
                                  track->global_current_track,
                                  track->number,
@@ -699,6 +708,7 @@ char audio_file_ext[5];
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef _WIN32

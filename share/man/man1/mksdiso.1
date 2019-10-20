@@ -1,0 +1,135 @@
+.TH MKSDISO 1
+.SH NAME
+mksdiso \- Convert a normal Dreamcast game image to an SD-ISO-Image.
+.
+.
+.
+.\" ====================================================================
+.\" Definitions
+.\" ====================================================================
+.
+.\" ====================================================================
+.\" 'char or string'
+.de Quoted
+.  ft CR
+\[oq]\\$*\[cq]
+.  ft
+..
+.
+.
+.\" ====================================================================
+.SH SYNOPSIS
+.\" ====================================================================
+.
+.SY mksdiso
+< \fB-h\fR | \fB-k\fR >
+.R <
+.I image.cdi
+.R |
+.I image-directory
+.R >
+.R [
+.I output-dir
+.R |
+.I output-iso
+.R ]
+.YS
+.
+.
+.\" ====================================================================
+.SH DESCRIPTION
+.\" ====================================================================
+.
+The
+.B mksdiso
+program is part of the
+.I mksdiso
+free software collection of Sega Dreamcast utilities available at 
+.UR https://\:github.com/Nold360/mksdiso
+Nold360's Github
+.UE .
+.
+.P
+The
+.B mksdiso
+program converts a file (or directory) from a
+.Quoted normal
+Dreamcast game image into the SD-ISO-Image format which can be used
+with Dreamshell ISO-Loader.
+
+.
+.\" ====================================================================
+.SH OPTIONS
+.\" ====================================================================
+.
+.TP
+.BI \-h
+.TQ
+.BI \-k
+Use
+.Quoted homebrew/IP.BIN
+or
+.Quoted katana/IP.BIN
+file.
+.
+Either \fB-h\fR or \fB-k\fR \fImust\fR be specified.
+.
+.TP
+.IR  Input-Dir
+.TQ
+.IR Input-ISO
+.TQ
+.IR Input-CDI
+Specify path to the input data. This can be a directory, an ISO file,
+or a CDI file.
+.
+.TP
+.IR Output-Dir
+.TQ
+.IR Output-ISO
+Specify path to the output data. Output can be either to a directory
+or an ISO file.
+.
+.\" ====================================================================
+.SH EXAMPLE
+.\" ====================================================================
+.
+.IP
+.EX
+mksdiso -k foo.cdi
+.EE
+.
+.
+.\" ====================================================================
+.SH BUGS
+.\" ====================================================================
+.
+None?
+.
+.\" ====================================================================
+.SH AUTHORS
+.\" ====================================================================
+.
+.B mksdiso
+was written by
+.UR https://nold.in/
+Nold
+.UE .
+.
+.\" ====================================================================
+.SH "SEE ALSO"
+.\" ====================================================================
+.
+.BR cdirip (1),
+.BR burncdi (1),
+.BR wodim (1),
+.BR cdrecord (1).
+.
+.\" ====================================================================
+.\" Emacs setup
+.\" ====================================================================
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+.\" vim: set filetype=groff:
