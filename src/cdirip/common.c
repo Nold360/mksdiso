@@ -7,78 +7,6 @@
 #endif
 #include "common.h"
 
-long fread_as_little (void *buf, long length, FILE *fsource)
-{
-     char *tmp;
-     long i;
-
-     tmp = buf;
-
-#ifdef BIG_ENDIAN
-     for (i = length; i > 0; i--)
-         if (!fread(&(tmp[i-1]), 1, 1, fsource)) return 0; // error
-#else
-     for (i = 0; i < length; i++)
-         if (!fread(&(tmp[i]), 1, 1, fsource)) return 0; // error
-#endif
-
-return 1; // success
-}
-
-long fread_as_big (void *buf, long length, FILE *fsource)
-{
-     char *tmp;
-     long i;
-
-     tmp = buf;
-
-#ifdef BIG_ENDIAN
-     for (i = 0; i < length; i++)
-         if (!fread(&(tmp[i]), 1, 1, fsource)) return 0; // error
-#else
-     for (i = length; i > 0; i--)
-         if (!fread(&(tmp[i-1]), 1, 1, fsource)) return 0; // error
-#endif
-
-return 1; // success
-}
-
-long fwrite_as_little (void *buf, long length, FILE *fdest)
-{
-     char *tmp;
-     long i;
-
-     tmp = buf;
-
-#ifdef BIG_ENDIAN
-     for (i = length; i > 0; i--)
-         if (!fwrite(&(tmp[i-1]), 1, 1, fdest)) return 0; // error
-#else
-     for (i = 0; i < length; i++)
-         if (!fwrite(&(tmp[i]), 1, 1, fdest)) return 0; // error
-#endif
-
-return 1; // success
-}
-
-long fwrite_as_big (void *buf, long length, FILE *fdest)
-{
-     char *tmp;
-     long i;
-
-     tmp = buf;
-
-#ifdef BIG_ENDIAN
-     for (i = 0; i < length; i++)
-         if (!fwrite(&(tmp[i]), 1, 1, fdest)) return 0; // error
-#else
-     for (i = length; i > 0; i--)
-         if (!fwrite(&(tmp[i-1]), 1, 1, fdest)) return 0; // error
-#endif
-
-return 1; // success
-}
-
 void error_exit(long errcode, char *string)
 {
 
@@ -113,7 +41,7 @@ HWND hWnd = NULL;
     MessageBoxA(hWnd, errmessage, NULL, MB_OK | MB_ICONERROR);
     ExitProcess(0);
 #else
-    //printf(errmessage);
+    fprintf(stderr, errmessage);
     exit(EXIT_FAILURE);
 #endif
 
