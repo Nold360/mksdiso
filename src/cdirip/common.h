@@ -13,7 +13,7 @@
 
 /* For Debug only! */
 
-//#define DEBUG_CDI
+// #define DEBUG_CDI
 
 
 
@@ -50,12 +50,6 @@ typedef struct track_s
 
 /* Functions */
 
-long fread_as_little(void *buf, long length, FILE *fsource);
-long fread_as_big(void *buf, long length, FILE *fsource);
-long fwrite_as_little(void *buf, long length, FILE *fdest);
-long fwrite_as_big(void *buf, long length, FILE *fdest);
-
 void error_exit(long errcode, char *string);
-
 
 #endif
