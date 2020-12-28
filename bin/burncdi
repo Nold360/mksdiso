@@ -50,8 +50,8 @@ function show_help {
     echo "Usage:"
     echo "       $0 [-f] [-c <CDRW-DRIVE>] <CDI-File>"
     echo
-    echo "       -f | Force burning of Image & enable overburning"
-    echo "       -c | Path to CD writer if not /dev/cdrw"
+    echo "       -f | Force burning of image & enable overburning"
+    echo "       -c | Path to CD writer if not auto-detecting"
     exit 1
 }
 
@@ -62,12 +62,16 @@ function cleanup {
 }
 
 OVERBURN=""
-DEVICE="/dev/cdrw"
+DEVICE=
 while getopts "fc:" opt; do
     case $opt in
         c)
             DEVICE="$OPTARG"
-            [ ! -e $DEVICE ] && show_help "Device '$DEVICE' does not exist"
+            if [ "$BURNBIN" == "cdrecord" ] ; then
+                $BURNBIN dev=${DEVICE} -checkdrive &> /dev/null || show_help "Device '$DEVICE' does not exist"
+            else
+                [ ! -e $DEVICE ] && show_help "Device '$DEVICE' does not exist"
+            fi
             ;;
         f)
             OVERBURN="-overburn"
@@ -80,6 +84,16 @@ while getopts "fc:" opt; do
             ;;
     esac
 done
+
+DEVICE_ARG=
+
+if [ ! -z "$DEVICE" ]; then
+    DEVICE_ARG="dev=${DEVICE}"
+fi
+
+if [ "$BURNBIN" == "cdrecord" ] ; then
+    $BURNBIN ${DEVICE_ARG} -checkdrive &> /dev/null || show_help "Unable to confirm device can be used"
+fi
 
 CDIIMG="${@:$OPTIND:1}"
 if [ ! -f "$CDIIMG" ] ; then
@@ -112,6 +126,7 @@ echo "Starting burning process using $BURNBIN"
 COUNTER=0
 RET=99
 MORE=true
+
 while $MORE ; do
     COUNTER=$(($COUNTER + 1))
     NUMBER=$(printf %02u $COUNTER)
@@ -121,10 +136,10 @@ while $MORE ; do
     echo "---------------------------------------------------"
     if [ -f $WAVFILE ]; then
         echo "Burning Part $NUMBER: '$WAVFILE'"
-        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE
+        $BURNBIN ${DEVICE_ARG} speed=4 ${OVERBURN} -tao -multi -audio $WAVFILE
     elif [ -f $ISOFILE ]; then
         echo "Burning Part  $NUMBER: '$ISOFILE'"
-        $BURNBIN dev=${DEVICE} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE
+        $BURNBIN ${DEVICE_ARG} speed=4 ${OVERBURN} -tao -multi -xa $ISOFILE
         RET=$?
     else
         MORE=false
