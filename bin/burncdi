@@ -153,9 +153,13 @@ echo -n "Cleaning up... "
 cleanup
 echo "Done"
 
-echo -n "Ejecting Disk... "
-eject $DEVICE &>/dev/null
-echo "Done"
+if type eject &> /dev/null && [ ! -z "$DEVICE" ]; then
+    echo -n "Ejecting Disk... "
+    eject $DEVICE &>/dev/null
+    echo "Done"
+else
+    echo "Couldn't eject automatically: You'll need to eject the disk yourself."
+fi
 
 if [ $RET -eq 0 ] ; then
     echo "---------------------------------------------------"
