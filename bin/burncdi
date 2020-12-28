@@ -46,7 +46,7 @@ function show_help {
         echo $@
         echo "---------------------------------------------------"
     fi
-    echo "BurnCDI - Script to burn CDI-Images to disk using Linux"
+    echo "BurnCDI - Script to burn CDI-Images to disk"
     echo "Usage:"
     echo "       $0 [-f] [-c <CDRW-DRIVE>] <CDI-File>"
     echo
@@ -57,7 +57,7 @@ function show_help {
 
 function cleanup {
     if [ ! -z "$EXT_DIR" ] && [ -d "$EXT_DIR" ] ; then
-        rm -rf --one-file-system "${EXT_DIR}"
+        rm -rf "${EXT_DIR}"
     fi
 }
 
