@@ -2,14 +2,12 @@
 CC = g++
 STRIP = strip
 WINDRES = windres
-PACKER = res/upx
 RM = rm
 
 # flags
 # add the -DDEBUG directive to CPPFLAGS to compile in DEBUG mode.
 #CPPFLAGS = -O3 -DDEBUG
 CPPFLAGS = -O3 -fPIC
-PACKEROPT = -9 --compress-resources=0
 
 # directories
 OBJ_DIR = obj/
@@ -26,18 +24,11 @@ OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)binhack.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
 all : $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 	$(STRIP) $(TARGET)
-	$(PACKER) $(PACKEROPT) $(TARGET)
 # Linux compiling
-linux : $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
-	$(STRIP) $(TARGET)
-	./$(PACKER) $(PACKEROPT) $(TARGET)
+linux : all
 
 # Mac OSX compiling, thanks to darcagn
-osx : $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
-	$(STRIP) $(TARGET)
-
+osx : all
 
 # compile source
 $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
